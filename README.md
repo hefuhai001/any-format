@@ -16,7 +16,7 @@
 
 ```bash
 # 锁定 tag（推荐）
-npm i github:hefuhai001/format-conversion#v0.2.0
+npm i github:hefuhai001/format-conversion#v0.0.1
 
 # 跟随主干
 npm i github:hefuhai001/format-conversion

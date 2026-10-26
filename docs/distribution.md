@@ -9,7 +9,7 @@
 npm i github:hefuhai001/format-conversion
 
 # 锁定 tag（推荐用于生产）
-npm i github:hefuhai001/format-conversion#v0.2.0
+npm i github:hefuhai001/format-conversion#v0.0.1
 
 # 锁定到某个 commit
 npm i github:hefuhai001/format-conversion#a1b2c3d
@@ -20,7 +20,7 @@ npm i github:hefuhai001/format-conversion#a1b2c3d
 ```json
 {
   "dependencies": {
-    "anyformat": "github:hefuhai001/format-conversion#v0.2.0"
+    "anyformat": "github:hefuhai001/format-conversion#v0.0.1"
   }
 }
 ```
@@ -28,8 +28,8 @@ npm i github:hefuhai001/format-conversion#a1b2c3d
 pnpm / yarn 同样支持：
 
 ```bash
-pnpm add github:hefuhai001/format-conversion#v0.2.0
-yarn add github:hefuhai001/format-conversion#v0.2.0
+pnpm add github:hefuhai001/format-conversion#v0.0.1
+yarn add github:hefuhai001/format-conversion#v0.0.1
 ```
 
 ## 安装时会发生什么
@@ -50,13 +50,13 @@ GitHub 直装依赖 `prepare` 脚本，npm 会：
 - **ESM 与 CJS 都可用**：`import` 走 `dist/index.js`，`require` 走 `dist/index.cjs`
 - **可选引擎仍需自行安装**：GitHub 直装不会带上 `mammoth`、`xlsx`、`pdfkit` 等 peer 依赖，用到哪种格式就装哪个（见[格式支持](./formats.md)）
 - **TypeScript 无需额外配置**：类型随包提供，`exports` 已声明 `types` 条件
-- **升级**：`npm i github:hefuhai001/format-conversion#v0.3.0`；GitHub 直装不参与 semver 自动升级，版本号需手动改
+- **升级**：`npm i github:hefuhai001/format-conversion#v0.0.2`；GitHub 直装不参与 semver 自动升级，版本号需手动改
 
 ## 其他分发方式
 
 | 方式 | 命令 | 适用场景 |
 | --- | --- | --- |
-| tarball | `npm pack` → `npm i ./anyformat-0.2.0.tgz` | 内网、离线、交付给无法访问 GitHub 的同学 |
+| tarball | `npm pack` → `npm i ./anyformat-0.0.1.tgz` | 内网、离线、交付给无法访问 GitHub 的同学 |
 | 本地联调 | `npm link`（仓库内）→ `npm link anyformat`（项目中） | 边改边用，无需发版 |
 | git submodule / monorepo | workspace 内直接引用路径 | 同一仓库多包协作 |
 | 私有 registry | Verdaccio，`npm publish --registry http://localhost:4873` | 团队统一源与缓存 |
