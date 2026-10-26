@@ -1,4 +1,4 @@
-import { escapeText } from './markdown-to-html.js';
+import { escapeText } from './escape.js';
 import type { Converter } from '../core/types.js';
 
 export interface TextToHtmlOptions {

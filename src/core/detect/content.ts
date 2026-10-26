@@ -1,65 +1,5 @@
-import { normalizeFormat } from './registry.js';
-import type { DetectResult, FormatDetector } from './types.js';
-
-const EXTENSION_MAP: Record<string, string> = {
-  md: 'markdown',
-  markdown: 'markdown',
-  mdx: 'markdown',
-  html: 'html',
-  htm: 'html',
-  xhtml: 'html',
-  txt: 'text',
-  text: 'text',
-  json: 'json',
-  csv: 'csv',
-  tsv: 'tsv',
-  xml: 'xml',
-  yaml: 'yaml',
-  yml: 'yaml',
-  docx: 'docx',
-  doc: 'doc',
-  pdf: 'pdf',
-  xlsx: 'xlsx',
-  xlsm: 'xlsx',
-  xls: 'xls',
-  pptx: 'pptx',
-  ppt: 'ppt',
-  epub: 'epub',
-};
-
-const MIME_MAP: Record<string, string> = {
-  'text/markdown': 'markdown',
-  'text/html': 'html',
-  'text/plain': 'text',
-  'application/json': 'json',
-  'text/csv': 'csv',
-  'text/tab-separated-values': 'tsv',
-  'application/xml': 'xml',
-  'text/xml': 'xml',
-  'application/x-yaml': 'yaml',
-  'text/yaml': 'yaml',
-  'application/pdf': 'pdf',
-  'application/msword': 'doc',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-  'application/vnd.ms-excel': 'xls',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
-  'application/vnd.ms-powerpoint': 'ppt',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
-  'application/epub+zip': 'epub',
-};
-
-/** Resolve a format from a file extension or MIME type. */
-export function detectFromFileName(filePath: string): string | undefined {
-  const clean = filePath.split(/[?#]/)[0] ?? filePath;
-  const dot = clean.lastIndexOf('.');
-  if (dot === -1 || dot === clean.length - 1) return undefined;
-  return EXTENSION_MAP[clean.slice(dot + 1).toLowerCase()];
-}
-
-export function detectFromMimeType(mimeType: string): string | undefined {
-  const clean = mimeType.split(';')[0]?.trim().toLowerCase() ?? '';
-  return MIME_MAP[clean];
-}
+import { normalizeFormat } from '../format.js';
+import type { DetectResult, FormatDetector } from '../types.js';
 
 const detectors: FormatDetector[] = [
   {
@@ -74,7 +14,7 @@ const detectors: FormatDetector[] = [
   {
     format: 'markdown',
     score(sample) {
-      const lines = sample.split(/\r?\n/).slice(0, 200);
+      const nonEmpty = sample.split(/\r?\n/).slice(0, 200).length > 0;
       let hits = 0;
       if (/^#{1,6}\s+\S/m.test(sample)) hits += 1;
       if (/^```/m.test(sample)) hits += 1;
@@ -83,7 +23,7 @@ const detectors: FormatDetector[] = [
       if (/\[[^\]]+\]\([^)]+\)/.test(sample)) hits += 1;
       if (/^>\s+\S/m.test(sample)) hits += 1;
       if (/\*\*[^*]+\*\*/.test(sample)) hits += 1;
-      return Math.min(1, hits / 3) * 0.9 + (lines.length > 0 ? 0.05 : 0);
+      return Math.min(1, hits / 3) * 0.9 + (nonEmpty ? 0.05 : 0);
     },
   },
   {
@@ -114,8 +54,7 @@ const detectors: FormatDetector[] = [
   {
     format: 'xml',
     score(sample) {
-      const trimmed = sample.trimStart();
-      return /^<\?xml/i.test(trimmed) ? 1 : 0;
+      return /^<\?xml/i.test(sample.trimStart()) ? 1 : 0;
     },
   },
   {
@@ -128,7 +67,7 @@ const detectors: FormatDetector[] = [
 
 /**
  * Guess the format of a text sample. Returns the highest scoring detector,
- * defaulting to `text` when nothing scores above zero.
+ * defaulting to `text` when nothing scores above `minConfidence`.
  */
 export function detectFormat(sample: string, options: { minConfidence?: number } = {}): DetectResult {
   if (typeof sample !== 'string') {

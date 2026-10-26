@@ -203,6 +203,45 @@ try {
 - [ ] 流式 API（`convertStream()`）处理大文件
 - [ ] 内置转换器的 CommonMark 一致性测试套件
 
+## 目录结构
+
+```
+src/
+├── index.ts                  # 公共 API 门面：只做导出与薄封装
+├── registry.ts               # 默认注册表 + 内置/适配器装配
+├── core/
+│   ├── types.ts              # 全部公开类型契约
+│   ├── format.ts             # 格式名规范化
+│   ├── path.ts               # 格式图 BFS 路径搜索
+│   ├── registry.ts           # 转换器注册表
+│   ├── convert.ts            # 转换调度、错误包装、取消
+│   ├── errors.ts             # 错误类型与错误码
+│   └── detect/               # content.ts（内容探测器） / rules.ts（扩展名与 MIME）
+├── converters/               # 纯 JS、零运行时依赖
+│   ├── escape.ts             # HTML 转义
+│   ├── entities.ts           # HTML 实体解码
+│   ├── markdown/             # types / inline / blocks —— markdown → html
+│   ├── html-to-markdown/     # types / inline / blocks
+│   ├── csv/                  # parse / serialize / converters
+│   ├── table/                # markdown-table / html-table / records / converters
+│   └── html-to-text.ts · text-to-html.ts · text-to-markdown.ts
+└── adapters/                 # 可选引擎，全部懒加载
+    ├── loader.ts             # 动态 import + 二进制输入校验
+    ├── blocks/               # types / parse / inline / text —— 供 docx·pdf·pptx 复用
+    ├── docx/                 # read（mammoth） / write（docx）
+    ├── pdf/                  # read（pdf-parse） / write（pdfkit）
+    ├── pptx/                 # read（fflate） / serialize / write（pptxgenjs）
+    ├── xlsx/                 # read / write（SheetJS）
+    └── doc.ts                # 老式 .doc 只读
+```
+
+拆分约定：
+
+- 单文件目标 ≤150 行，超出的按**输入 / 输出 / 序列化**分治
+- 每个目录用 `index.ts` 做 barrel，内部文件重排不影响对外 API
+- 共用能力（转义、实体、块模型、表格渲染）抽到独立模块，避免适配器互相依赖
+- 目录结构调整不改变 `package.json` 的 `exports`，发布产物仍是单一的 `dist/index.js`
+
 ## 开发
 
 ```bash

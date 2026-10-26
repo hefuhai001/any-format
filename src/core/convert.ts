@@ -15,7 +15,7 @@ export async function runConversion(
 
   const source = normalizeFormat(from);
   const target = normalizeFormat(to);
-  const path = assertPath(registry, source, target, { via: options.via, maxHops: options.maxHops ?? DEFAULT_MAX_HOPS });
+  const path = assertPath(registry.edges(), source, target, { via: options.via, maxHops: options.maxHops ?? DEFAULT_MAX_HOPS });
 
   let current: ConvertInput = input;
 

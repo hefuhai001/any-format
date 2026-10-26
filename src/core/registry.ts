@@ -1,14 +1,8 @@
-import { UnsupportedConversionError } from './errors.js';
+import { normalizeFormat } from './format.js';
+import { findPath, type FindPathOptions, type FormatEdges } from './path.js';
 import type { Converter, Format } from './types.js';
 
 const key = (from: Format, to: Format) => `${from}->${to}`;
-
-export interface FindPathOptions {
-  /** Intermediate formats allowed when no direct converter exists. `false` disables chaining. */
-  via?: Format[] | false;
-  /** Max number of hops. Default `2`. */
-  maxHops?: number;
-}
 
 /**
  * Holds every registered converter and answers the graph queries used by `convert()`.
@@ -17,7 +11,7 @@ export interface FindPathOptions {
  */
 export class ConverterRegistry {
   #converters = new Map<string, Converter<any>[]>();
-  #edgeCache?: Map<Format, Format[]>;
+  #edgeCache?: FormatEdges;
 
   /** Register a converter. Returns a disposer that removes it again. */
   register<O>(converter: Converter<O>): () => void {
@@ -84,38 +78,9 @@ export class ConverterRegistry {
     this.#edgeCache = undefined;
   }
 
-  /**
-   * Shortest conversion path from `from` to `to` (BFS over the format graph).
-   * Returns `[from, to]` for a direct hit, `undefined` when unreachable.
-   */
+  /** Shortest conversion path between two formats; see `core/path.ts`. */
   findPath(from: Format, to: Format, options: FindPathOptions = {}): Format[] | undefined {
-    const start = normalizeFormat(from);
-    const goal = normalizeFormat(to);
-    if (start === goal) return [start];
-    if (this.has(start, goal)) return [start, goal];
-    if (options.via === false) return undefined;
-
-    const maxHops = Math.max(1, options.maxHops ?? 2);
-    const allowed = options.via === undefined ? undefined : new Set(options.via.map(normalizeFormat));
-    const edges = this.#edges();
-
-    const queue: Format[][] = [[start]];
-    const visited = new Set<Format>([start]);
-
-    while (queue.length > 0) {
-      const path = queue.shift()!;
-      if (path.length - 1 >= maxHops) continue;
-
-      for (const next of edges.get(path[path.length - 1]!) ?? []) {
-        if (next === goal) return [...path, next];
-        if (visited.has(next)) continue;
-        if (allowed && !allowed.has(next)) continue;
-        visited.add(next);
-        queue.push([...path, next]);
-      }
-    }
-
-    return undefined;
+    return findPath(this.edges(), from, to, options);
   }
 
   /** Human readable listing, mainly for debugging and `listConverters()`. */
@@ -128,37 +93,22 @@ export class ConverterRegistry {
     }));
   }
 
-  #edges(): Map<Format, Format[]> {
+  /** Cached adjacency list used by the path finder. */
+  edges(): FormatEdges {
     if (this.#edgeCache) return this.#edgeCache;
-    const edges = new Map<Format, Format[]>();
+
+    const edges: FormatEdges = new Map();
     for (const converter of this.entries()) {
       const list = edges.get(converter.from) ?? [];
       if (!list.includes(converter.to)) list.push(converter.to);
       edges.set(converter.from, list);
     }
+
     this.#edgeCache = edges;
     return edges;
   }
 }
 
-export function normalizeFormat(format: Format): Format {
-  return String(format).trim().toLowerCase();
-}
-
-/** Like `findPath` but throws `UnsupportedConversionError` instead of returning `undefined`. */
-export function assertPath(
-  registry: ConverterRegistry,
-  from: Format,
-  to: Format,
-  options?: FindPathOptions,
-): Format[] {
-  const path = registry.findPath(from, to, options);
-  if (!path) {
-    throw new UnsupportedConversionError(
-      normalizeFormat(from),
-      normalizeFormat(to),
-      options?.via ? 'no path through the allowed intermediate formats' : 'no direct or chained converter registered',
-    );
-  }
-  return path;
-}
+export { normalizeFormat };
+export { assertPath, findPath } from './path.js';
+export type { FindPathOptions, FormatEdges } from './path.js';
