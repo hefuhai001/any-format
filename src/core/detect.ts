@@ -17,8 +17,13 @@ const EXTENSION_MAP: Record<string, string> = {
   yaml: 'yaml',
   yml: 'yaml',
   docx: 'docx',
+  doc: 'doc',
   pdf: 'pdf',
   xlsx: 'xlsx',
+  xlsm: 'xlsx',
+  xls: 'xls',
+  pptx: 'pptx',
+  ppt: 'ppt',
   epub: 'epub',
 };
 
@@ -34,8 +39,12 @@ const MIME_MAP: Record<string, string> = {
   'application/x-yaml': 'yaml',
   'text/yaml': 'yaml',
   'application/pdf': 'pdf',
+  'application/msword': 'doc',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.ms-excel': 'xls',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
   'application/epub+zip': 'epub',
 };
 

@@ -90,8 +90,8 @@ describe('registry', () => {
 describe('errors and cancellation', () => {
   it('throws UnsupportedConversionError with formats attached', async () => {
     await assert.rejects(
-      () => convert('x', 'pdf', 'markdown'),
-      (error: unknown) => error instanceof UnsupportedConversionError && error.from === 'pdf' && error.to === 'markdown',
+      () => convert('x', 'unknown-src', 'markdown'),
+      (error: unknown) => error instanceof UnsupportedConversionError && error.from === 'unknown-src' && error.to === 'markdown',
     );
   });
 

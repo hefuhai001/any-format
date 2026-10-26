@@ -5,8 +5,9 @@
 ## 特性
 
 - **插件式架构**：任何格式对都可以通过 `registerConverter()` 注册，无侵入扩展
-- **自动中转**：没有直接转换器时，按格式图 BFS 找最短路径（如 `markdown → html → text`）
-- **零运行时依赖**：内置转换器均为手写实现，安装体积小
+- **自动中转**：没有直接转换器时，按格式图 BFS 找最短路径（如 `docx → html → pdf`）
+- **零运行时依赖**：核心与文本/表格转换器为手写实现；Office/PDF 引擎按需安装为可选 peer
+- **Office/PDF 全链路**：`docx`/`doc`/`xlsx`/`xls`/`pptx`/`pdf` 与文本族任意互转
 - **格式探测**：按内容、文件扩展名或 MIME 类型推断格式
 - **可取消 / 可组合**：支持 `AbortSignal`，可自建独立 `ConverterRegistry`
 - **ESM + CJS**：`import` 与 `require` 均可，含 `.d.ts`
@@ -37,13 +38,80 @@ console.log(path); // ['markdown', 'html', 'text']
 console.log(data); // # Title\n\nHello
 ```
 
-## 内置格式
+## 格式支持矩阵
 
-| from | to | 说明 |
-| --- | --- | --- |
-| `markdown` | `html` | 标题、列表、引用、围栏代码块、链接/图片、粗体/斜体/删除线 |
-| `html` | `text` | 剥离标签，保留段落与列表结构，解码实体 |
-| `text` | `html` | 按空行分段转 `<p>`，自动转义 |
+「读」= 可解析为该格式，「写」= 可生成为该格式。表格族与文本族为纯 JS 实现，Office/PDF 依赖可选 peer。
+
+| 格式 | 读 | 写 | 依赖 |
+| --- | --- | --- | --- |
+| `markdown` | ✓ | ✓ | 无 |
+| `html` | ✓ | ✓ | 无 |
+| `text` | ✓ | ✓ | 无 |
+| `csv` / `tsv` | ✓ | ✓ | 无 |
+| `json` | ✓ | ✓ | 无 |
+| `docx` | ✓ | ✓ | `mammoth` / `docx` |
+| `xlsx` | ✓ | ✓ | `xlsx` |
+| `xls` | ✓ | ✓ | `xlsx` |
+| `pptx` | ✓ | ✓ | `fflate` / `pptxgenjs` |
+| `pdf` | ✓（文本） | ✓ | `pdf-parse` / `pdfkit` |
+| `doc` | ✓（文本） | ✗ | `word-extractor` |
+
+任意两种格式之间都可 `convert()`：没有直接转换器时自动中转，最多 2 跳。
+
+```ts
+await convert(csvText, 'csv', 'xlsx');       // 表格 -> Excel
+await convert(xlsxBuffer, 'xlsx', 'json');   // Excel -> JSON
+await convert(docxBuffer, 'docx', 'pdf');    // docx -> html -> pdf
+await convert('# 标题\n\n要点', 'markdown', 'pptx'); // 每页一个标题
+```
+
+### 安装可选依赖
+
+核心包零依赖。按需安装所需格式的引擎：
+
+```bash
+# Word
+npm i mammoth          # docx 读取
+npm i docx             # docx 生成
+npm i word-extractor   # 老式 .doc 读取
+
+# Excel
+npm i xlsx             # xlsx/xls 读写（SheetJS）
+
+# PowerPoint
+npm i fflate pptxgenjs # pptx 读取 / 生成
+
+# PDF
+npm i pdf-parse        # pdf 文本提取
+npm i pdfkit           # pdf 生成
+```
+
+未安装时调用会抛出明确错误，提示需要执行的安装命令，不影响其他格式。
+
+### 二进制用法
+
+二进制格式的输入是 `Buffer`/`Uint8Array`，输出是 `Uint8Array`：
+
+```ts
+import { readFile, writeFile } from 'node:fs/promises';
+import { convert } from 'format-conversion';
+
+const docx = await readFile('report.docx');            // 不要用 'utf8'
+const { data } = await convert(docx, 'docx', 'markdown');
+console.log(data);                                     // string
+
+const pdf = await convert('# 报告', 'markdown', 'pdf');
+await writeFile('report.pdf', pdf.data as Uint8Array);
+```
+
+> 中文 PDF：`pdfkit` 内置字体仅支持拉丁字符，转中文需指定 TTF 字体路径：
+> `convert(md, 'markdown', 'pdf', { converterOptions: { fontPath: './fonts/SourceHanSans.ttf' } })`
+
+### 老式二进制格式说明
+
+- `.doc`（Word 97-2003）：**只读**。二进制格式在纯 JS 中没有可靠的写入实现，需要 LibreOffice 等外部后端。
+- `.xls`（Excel 97-2003）：SheetJS 支持读写，已覆盖。
+- `.ppt`（PowerPoint 97-2003）：不支持，请先转为 `.pptx`。
 
 ## API
 
@@ -128,8 +196,10 @@ try {
 
 ## 路线图
 
-- [ ] `adapters/`：`docx → html`（mammoth）、`html → pdf`（puppeteer/playwright）、`xlsx ↔ csv`
-- [ ] 表格族内置转换：`csv ↔ json ↔ markdown table`
+- [x] 表格族内置转换：`csv ↔ tsv ↔ json ↔ markdown table ↔ html table`
+- [x] `docx` / `xlsx` / `xls` / `pptx` / `pdf` / `doc` 适配器
+- [ ] `.ppt`（老版 PowerPoint）支持
+- [ ] 可选 LibreOffice 后端，覆盖 `.doc` 写入与高保真互转
 - [ ] 流式 API（`convertStream()`）处理大文件
 - [ ] 内置转换器的 CommonMark 一致性测试套件
 
