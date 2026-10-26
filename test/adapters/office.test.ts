@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { canConvert, convert } from '../src/index.js';
+import { canConvert, convert } from '../../src/index.js';
 
 const csv = 'name,age,city\nAlice,30,Beijing\nBob,25,"Shanghai, CN"';
 const markdown = '# Report\n\nA **bold** paragraph.\n\n- first\n- second\n\n```js\nconsole.log(1);\n```\n';
@@ -161,17 +161,141 @@ describe('office conversion graph', () => {
   });
 
   it('surfaces a useful error for a missing optional dependency', async () => {
-    const { ConverterRegistry, runConversion } = await import('../src/index.js');
+    const { ConverterRegistry, runConversion } = await import('../../src/index.js');
     const registry = new ConverterRegistry();
     registry.register({
       from: 'a',
       to: 'b',
       async convert() {
-        const { optionalImport } = await import('../src/adapters/loader.js');
+        const { optionalImport } = await import('../../src/adapters/loader.js');
         await optionalImport('definitely-not-installed-pkg');
         return '';
       },
     });
     await assert.rejects(() => runConversion(registry, 'x', 'a', 'b'), /npm i definitely-not-installed-pkg/);
+  });
+});
+
+describe('adapter options', () => {
+  it('renders pptx slides as html sections', async () => {
+    const pptx = await asBinary('# Deck\n\n- a', 'markdown', 'pptx');
+    const html = await asText(pptx, 'pptx', 'html');
+    assert.match(html, /<section class="slide">/);
+    assert.match(html, /<h2>Deck<\/h2>/);
+    assert.match(html, /<li>a<\/li>/);
+  });
+
+  it('omits slide numbers when disabled', async () => {
+    const pptx = await asBinary('# Deck\n\n- a', 'markdown', 'pptx');
+    const text = await asText(pptx, 'pptx', 'text', { converterOptions: { slideNumbers: false } });
+    assert.ok(!text.includes('[Slide 1]'));
+    assert.match(text, /Deck/);
+  });
+
+  it('reads a worksheet without a header row', async () => {
+    const xlsx = await asBinary(csv, 'csv', 'xlsx');
+    const records = JSON.parse(await asText(xlsx, 'xlsx', 'json', { converterOptions: { header: false } }));
+    assert.deepEqual(Object.keys(records[0]), ['0', '1', '2']);
+  });
+
+  it('builds xlsx from every text table source', async () => {
+    const sources: Array<[string, string]> = [
+      ['csv', 'a,b\n1,2'],
+      ['tsv', 'a\tb\n1\t2'],
+      ['json', '[{"a":"1","b":"2"}]'],
+      ['markdown', '| a | b |\n| --- | --- |\n| 1 | 2 |'],
+      ['html', '<table><tr><th>a</th><th>b</th></tr><tr><td>1</td><td>2</td></tr></table>'],
+    ];
+
+    for (const [from, input] of sources) {
+      const xlsx = await asBinary(input, from, 'xlsx');
+      assert.match(await asText(xlsx, 'xlsx', 'csv'), /^a,b\n1,2$/m, `${from} -> xlsx -> csv`);
+    }
+  });
+
+  it('writes legacy xls from markdown tables', async () => {
+    const xls = await asBinary('| a |\n| --- |\n| 1 |', 'markdown', 'xls');
+    assert.deepEqual([...xls.subarray(0, 4)], [0xd0, 0xcf, 0x11, 0xe0]);
+    assert.match(await asText(xls, 'xls', 'csv'), /^a\n1$/m);
+  });
+
+  it('honours pdf page layout options', async () => {
+    const pdf = await asBinary('Hello layout', 'text', 'pdf', {
+      converterOptions: { size: 'LETTER', margin: 24, fontSize: 12, title: 'T' },
+    });
+    assert.equal(Buffer.from(pdf.subarray(0, 5)).toString(), '%PDF-');
+    assert.match(await asText(pdf, 'pdf', 'text'), /Hello layout/);
+  });
+
+  it('accepts a docx style map', async () => {
+    const docx = await asBinary('# H\n\ntext', 'markdown', 'docx');
+    const html = await asText(docx, 'docx', 'html', {
+      converterOptions: { styleMap: ["p[style-name='Heading 1'] => h1:fresh"] },
+    });
+    assert.match(html, /<h1>H<\/h1>/);
+  });
+
+  it('reports a clear error for malformed binary input', async () => {
+    await assert.rejects(() => asText(new Uint8Array([1, 2, 3, 4]), 'docx', 'text'), /failed/i);
+    await assert.rejects(() => asText(new Uint8Array([1, 2, 3, 4]), 'pptx', 'text'), /pptx/i);
+  });
+
+  it('rejects text input passed to a binary format', async () => {
+    await assert.rejects(
+      () => asText('plain string', 'docx', 'text'),
+      /require binary input|readFile/,
+    );
+  });
+});
+
+describe('rich content rendering', () => {
+  it('renders quotes, code, rules and ordered lists into pdf', async () => {
+    const pdf = await asBinary('> quoted line\n\n```js\nconst a = 1;\n```\n\n---\n\n1. first\n2. second', 'markdown', 'pdf');
+    const text = await asText(pdf, 'pdf', 'text');
+
+    assert.match(text, /quoted line/);
+    assert.match(text, /const a = 1;/);
+    assert.match(text, /first/);
+    assert.match(text, /second/);
+  });
+
+  it('handles slides without an explicit title', async () => {
+    const pptx = await asBinary('---\n\n- only body', 'markdown', 'pptx');
+    const html = await asText(pptx, 'pptx', 'html');
+
+    assert.match(html, /<section class="slide">/);
+    // Readers promote the first paragraph of a slide to its heading.
+    assert.match(html, /<h2>only body<\/h2>/);
+  });
+
+  it('selects a worksheet by numeric index', async () => {
+    const xlsx = await asBinary(csv, 'csv', 'xlsx');
+    assert.match(await asText(xlsx, 'xlsx', 'csv', { converterOptions: { sheet: 0 } }), /Alice/);
+  });
+
+  it('renders a worksheet as tab separated text', async () => {
+    const xlsx = await asBinary(csv, 'csv', 'xlsx');
+    assert.match(await asText(xlsx, 'xlsx', 'text'), /^name\tage\tcity$/m);
+  });
+});
+
+describe('legacy doc format', () => {
+  it('is registered as a read source', () => {
+    assert.equal(canConvert('doc', 'text'), true);
+    assert.equal(canConvert('doc', 'pdf'), true);
+    assert.equal(canConvert('doc', 'docx'), true);
+  });
+
+  it('rejects docx -> doc with backend instructions', async () => {
+    const docx = await asBinary('# x', 'markdown', 'docx');
+    await assert.rejects(() => convert(docx, 'docx', 'doc'), /LibreOffice/);
+  });
+
+  it('rejects text -> doc with backend instructions', async () => {
+    await assert.rejects(() => convert('x', 'text', 'doc'), /headless --convert-to doc/);
+  });
+
+  it('fails cleanly on malformed binary input', async () => {
+    await assert.rejects(() => asText(new Uint8Array([1, 2, 3, 4]), 'doc', 'text'), /failed/i);
   });
 });

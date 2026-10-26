@@ -20,17 +20,22 @@ export function parseCsv(source: string, options: CsvParseOptions = {}): string[
   let row: string[] = [];
   let field = '';
   let inQuotes = false;
+  let fieldQuoted = false;
+  let rowQuoted = false;
   let index = 0;
 
   const pushField = () => {
-    row.push(trim && !inQuotes ? field.trim() : field);
+    // Trim only unquoted fields: quoting is an explicit request to keep them.
+    row.push(trim && !fieldQuoted ? field.trim() : field);
     field = '';
+    fieldQuoted = false;
   };
   const pushRow = () => {
     pushField();
-    // Ignore fully empty trailing rows produced by a final newline.
-    if (row.length > 1 || row[0] !== '') rows.push(row);
+    // Drop rows created purely by a trailing newline, but keep quoted empties.
+    if (row.length > 1 || row[0] !== '' || rowQuoted) rows.push(row);
     row = [];
+    rowQuoted = false;
   };
 
   while (index < text.length) {
@@ -54,6 +59,8 @@ export function parseCsv(source: string, options: CsvParseOptions = {}): string[
 
     if (char === quote && field === '') {
       inQuotes = true;
+      fieldQuoted = true;
+      rowQuoted = true;
       index += 1;
       continue;
     }
@@ -77,7 +84,7 @@ export function parseCsv(source: string, options: CsvParseOptions = {}): string[
     index += 1;
   }
 
-  if (field !== '' || row.length > 0) pushRow();
+  if (field !== '' || row.length > 0 || rowQuoted) pushRow();
   return rows;
 }
 

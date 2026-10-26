@@ -63,6 +63,7 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test --import tsx \"test/**/*.test.ts\"",
+    "test:coverage": "node --test --import tsx --experimental-test-coverage \"test/**/*.test.ts\"",
     "lint": "tsc --noEmit",
     "prepublishOnly": "npm run build && npm test"
   },

@@ -15,7 +15,8 @@ export function renderInlineMarkdown(html: string): string {
   out = out
     .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_m, href: string, label: string) => {
       const text = label.replace(/<[^>]+>/g, '').trim();
-      return text && text !== href ? `[${text}](${href})` : `<${href}>`;
+      // Autolinks would be mangled by the tag strip below, so always emit a link.
+      return text && text !== href ? `[${text}](${href})` : `[${href}](${href})`;
     })
     .replace(/<img\b[^>]*src=["']([^"']+)["'][^>]*alt=["']([^"']*)["'][^>]*>/gi, (_m, src: string, alt: string) => `![${alt}](${src})`)
     .replace(/<img\b[^>]*alt=["']([^"']*)["'][^>]*src=["']([^"']+)["'][^>]*>/gi, (_m, alt: string, src: string) => `![${alt}](${src})`)
@@ -23,6 +24,8 @@ export function renderInlineMarkdown(html: string): string {
     .replace(/<(em|i)\b[^>]*>([\s\S]*?)<\/\1>/gi, '*$2*')
     .replace(/<del\b[^>]*>([\s\S]*?)<\/del>/gi, '~~$1~~')
     .replace(/<mark\b[^>]*>([\s\S]*?)<\/mark>/gi, '==$1==')
+    // Markdown hard line break: two trailing spaces.
+    .replace(/<br\s*\/?>/gi, '  \n')
     .replace(/<[^>]+>/g, '');
 
   out = decodeEntities(out);

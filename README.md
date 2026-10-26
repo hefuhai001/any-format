@@ -246,11 +246,28 @@ src/
 
 ```bash
 npm install
-npm run dev        # 监听构建
-npm test           # node:test + tsx
+npm run dev            # 监听构建
+npm test               # node:test + tsx
+npm run test:coverage  # 覆盖率报告
 npm run typecheck
 npm run build
 ```
+
+测试按层组织，与 `src` 目录一一对应：
+
+```
+test/
+├── core/          # 注册表、路径搜索、调度、探测、错误
+├── converters/    # markdown / html / csv / table / text 纯 JS 转换器
+├── adapters/      # 懒加载、docx / xlsx / pptx / pdf / doc
+└── integration.test.ts   # 格式矩阵、真实链路往返、扩展性
+```
+
+约定：
+
+- 纯函数优先直测，格式转换走公共 API `convert()`，确保契约与实现同时被覆盖
+- Office/PDF 用例会真实生成并回读文件（校验 ZIP/OLE2/`%PDF-` 文件头），而不是 mock
+- 边界优先：空输入、畸形输入、错误分支、取消信号、选项传递
 
 ## License
 
