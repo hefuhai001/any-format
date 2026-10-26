@@ -84,7 +84,7 @@ export async function writePptx(blocks: Block[], options: PptxWriteOptions = {})
   const pptx = new PptxGenJS();
   pptx.layout = options.layout ?? 'LAYOUT_16x9';
   if (options.title) pptx.title = options.title;
-  pptx.author = 'format-conversion';
+  pptx.author = 'anyformat';
 
   const fontFace = options.fontFace ?? 'Arial';
   const titleSize = options.titleSize ?? 28;

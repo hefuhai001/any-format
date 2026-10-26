@@ -1,0 +1,49 @@
+name: Verify release
+
+# Tag pushed → typecheck, test, build, and publish a tarball artifact.
+# The project is distributed via GitHub, so nothing is pushed to npm here.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      - name: Verify published contents
+        run: npx --yes publint
+
+      - name: Pack tarball
+        run: npm pack
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: anyformat-tarball
+          path: '*.tgz'
+          retention-days: 90
+
+      # Publishing to npm is intentionally disabled. To enable it, register the
+      # package, then either bind a Trusted Publisher on npmjs.com or add an
+      # NPM_TOKEN secret (Automation type) and uncomment the step below.
+      #
+      # - name: Publish
+      #   run: npm publish --provenance
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

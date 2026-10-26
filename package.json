@@ -1,5 +1,5 @@
 {
-  "name": "format-conversion",
+  "name": "anyformat",
   "version": "0.2.0",
   "description": "A lightweight, plugin-based document format conversion library for Node.js",
   "keywords": [
@@ -12,6 +12,18 @@
     "document"
   ],
   "license": "MIT",
+  "author": "hefuhai001",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hefuhai001/format-conversion.git"
+  },
+  "homepage": "https://github.com/hefuhai001/format-conversion#readme",
+  "bugs": {
+    "url": "https://github.com/hefuhai001/format-conversion/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -65,6 +77,7 @@
     "test": "node --test --import tsx \"test/**/*.test.ts\"",
     "test:coverage": "node --test --import tsx --experimental-test-coverage \"test/**/*.test.ts\"",
     "lint": "tsc --noEmit",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run build && npm test"
   },
   "devDependencies": {
