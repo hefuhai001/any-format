@@ -1,7 +1,14 @@
 # Gitee Go 流水线：校验 → 构建 → 打包 → 发布 Gitee 发行版
 # 触发：推送 v 开头的 tag（如 v0.0.2）
-# 依赖：在流水线「变量」中配置 GITEE_TOKEN（Gitee 私人令牌，勾选 projects/releases 权限）
-#       未配置时脚本会跳过发布步骤，只做校验与打包，不会让流水线失败
+#
+# 使用前：
+#   1. 在仓库「流水线」中开通 Gitee Go 并启用本流水线
+#   2. 在流水线变量里配置 GITEE_TOKEN（Gitee 私人令牌，勾选 projects、releases 权限）
+#      未配置时脚本只跳过发布，校验与打包照常执行，流水线不会失败
+#   3. 若 runner 访问 GitHub 受限，ffmpeg-static 的二进制下载会失败，可设置
+#      FFMPEG_BINARIES_URL 指向镜像后再 npm ci
+#
+# 测试用 find 展开文件列表，兼容 Node 18（`node --test` 的 glob 从 Node 21 起才支持）
 
 version: '1.0'
 
@@ -23,12 +30,12 @@ stages:
           name: verify-build-release
           displayName: '校验 → 构建 → 打包 → 发布'
           inputs:
-            nodeVersion: 20
+            nodeVersion: 18
             goals: |
               set -e
               npm ci
               npm run typecheck
-              npm test
+              node --test --import tsx $(find test -name '*.test.ts')
               npm run build
               npx --yes publint
               npm pack
