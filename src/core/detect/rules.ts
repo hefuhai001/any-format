@@ -24,6 +24,15 @@ const EXTENSION_MAP: Record<string, string> = {
   pptx: 'pptx',
   ppt: 'ppt',
   epub: 'epub',
+  png: 'png',
+  jpg: 'jpeg',
+  jpeg: 'jpeg',
+  jpe: 'jpeg',
+  webp: 'webp',
+  avif: 'avif',
+  tif: 'tiff',
+  tiff: 'tiff',
+  gif: 'gif',
 };
 
 const MIME_MAP: Record<string, string> = {
@@ -45,6 +54,13 @@ const MIME_MAP: Record<string, string> = {
   'application/vnd.ms-powerpoint': 'ppt',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
   'application/epub+zip': 'epub',
+  'image/png': 'png',
+  'image/jpeg': 'jpeg',
+  'image/jpg': 'jpeg',
+  'image/webp': 'webp',
+  'image/avif': 'avif',
+  'image/tiff': 'tiff',
+  'image/gif': 'gif',
 };
 
 /** Resolve a format from a file path or name. */

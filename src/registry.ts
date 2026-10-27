@@ -1,6 +1,6 @@
 import { ConverterRegistry } from './core/registry.js';
 import type { Converter } from './core/types.js';
-import { officeConverters } from './adapters/index.js';
+import { imageConverters, officeConverters } from './adapters/index.js';
 import { htmlToText } from './converters/html-to-text.js';
 import { htmlToMarkdown } from './converters/html-to-markdown/index.js';
 import { markdownToHtml } from './converters/markdown/index.js';
@@ -23,7 +23,7 @@ export const builtinConverters: Converter<any>[] = [
 /** Registry used by the top-level API. Create your own for isolation. */
 export const registry = new ConverterRegistry();
 
-registry.registerAll([...builtinConverters, ...officeConverters]);
+registry.registerAll([...builtinConverters, ...officeConverters, ...imageConverters]);
 
 /** Register a converter on the default registry. Returns a disposer. */
 export function registerConverter<O>(converter: Converter<O>): () => void {

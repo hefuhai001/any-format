@@ -186,10 +186,14 @@ import {
   registry,            // 默认注册表
   builtinConverters,   // 纯 JS 转换器数组
   officeConverters,    // 适配器转换器数组
+  imageConverters,     // 图片转换器数组（sharp）
+  IMAGE_FORMATS,       // ['png', 'jpeg', 'webp', 'avif', 'tiff', 'gif']
+  convertImage,        // 图片转码直连，跳过调度
+  readImageInfo,       // 读取图片元信息
   listFormats,         // 已知格式名
   listConverters,      // { from, to, name, priority }[]
   READ_ONLY_FORMATS,   // ['doc', 'pdf']
-  normalizeFormat,
+  normalizeFormat,     // 'JPG' -> 'jpeg'
 } from 'anyformat';
 ```
 

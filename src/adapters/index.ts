@@ -26,6 +26,7 @@ export const READ_ONLY_FORMATS: readonly Format[] = ['doc', 'pdf'];
 
 export { docConverters } from './doc.js';
 export { docxConverters, readDocxHtml, textToBlocks, writeDocx } from './docx/index.js';
+export { convertImage, imageConverters, IMAGE_FORMATS, readImageInfo } from './image/index.js';
 export { pdfConverters, readPdfText, writePdf } from './pdf/index.js';
 export { blocksToSlides, pptxConverters, readSlides, slidesToHtml, slidesToMarkdown, slidesToText, writePptx } from './pptx/index.js';
 export { SHEET_FORMATS, readRows, spreadsheetConverters, writeSheet } from './xlsx/index.js';
@@ -35,6 +36,7 @@ export { asBuffer, asText, optionalImport } from './loader.js';
 export type { Block, InlineRun } from './blocks/index.js';
 export type { DocReadOptions } from './doc.js';
 export type { DocxReadOptions, DocxWriteOptions } from './docx/index.js';
+export type { ImageConvertOptions, ImageFormat, ImageInfo } from './image/index.js';
 export type { PdfReadOptions, PdfWriteOptions } from './pdf/index.js';
 export type { PptxReadOptions, PptxWriteOptions } from './pptx/index.js';
 export type { SpreadsheetReadOptions, SpreadsheetWriteOptions } from './xlsx/index.js';

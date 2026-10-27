@@ -6,7 +6,7 @@
 
 ## 特性
 
-- **任意互转**：`markdown` `html` `text` `csv` `tsv` `json` 全互通，`docx` `doc` `xlsx` `xls` `pptx` `pdf` 双向接入
+- **任意互转**：`markdown` `html` `text` `csv` `tsv` `json` 全互通，`docx` `doc` `xlsx` `xls` `pptx` `pdf` 双向接入，`png` `jpeg` `webp` `avif` `tiff` `gif` 图片两两互转
 - **自动中转**：没有直接转换器时按格式图 BFS 找最短路径，如 `docx → html → pdf`
 - **零运行时依赖**：核心与文本/表格转换器为手写实现，Office/PDF 引擎懒加载
 - **可扩展**：任何格式对都可通过 `registerConverter()` 注册，支持优先级与注销
@@ -32,6 +32,7 @@ npm i xlsx              # xlsx / xls 读写
 npm i fflate pptxgenjs  # pptx 读写
 npm i pdf-parse pdfkit  # pdf 读写
 npm i word-extractor    # 老式 .doc 读取
+npm i sharp             # png / jpeg / webp / avif / tiff / gif 互转
 ```
 
 ## 快速开始
@@ -73,6 +74,7 @@ await writeFile('out.pdf', pdf.data as Uint8Array);
 | `pptx` | ✓ | ✓ | `fflate` / `pptxgenjs` |
 | `pdf` | ✓（仅文本） | ✓ | `pdf-parse` / `pdfkit` |
 | `doc` | ✓（仅文本） | ✗ | `word-extractor` |
+| `png` `jpeg` `webp` `avif` `tiff` `gif` | ✓ | ✓ | `sharp` |
 
 完整矩阵、各格式选项与限制见 **[格式支持](./docs/formats.md)**。
 
@@ -96,6 +98,16 @@ const dispose = registerConverter({
   to: 'upper',
   convert: (input) => String(input).toUpperCase(),
 });
+```
+
+图片除 `convert()` 外还提供两个直连辅助函数：
+
+```ts
+import { convertImage, readImageInfo } from 'anyformat';
+
+// 等同 convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
+const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });
+const { width, height, hasAlpha } = await readImageInfo(webp);
 ```
 
 完整签名、独立注册表、错误类型与全部导出见 **[API 参考](./docs/api.md)**。

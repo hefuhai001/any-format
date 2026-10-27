@@ -2,7 +2,7 @@
 
 ## 矩阵
 
-「读」= 可解析，「写」= 可生成。文本/表格族为纯 JS 实现，Office/PDF 依赖可选引擎。
+「读」= 可解析，「写」= 可生成。文本/表格族为纯 JS 实现，Office/PDF/图片依赖可选引擎。
 
 | 格式 | 读 | 写 | 依赖 |
 | --- | --- | --- | --- |
@@ -17,6 +17,9 @@
 | `pptx` | ✓ | ✓ | `fflate` / `pptxgenjs` |
 | `pdf` | ✓（仅文本） | ✓ | `pdf-parse` / `pdfkit` |
 | `doc` | ✓（仅文本） | ✗ | `word-extractor` |
+| `png` / `jpeg` / `webp` / `avif` / `tiff` / `gif` | ✓ | ✓ | `sharp` |
+
+图片族任意两两互转都是直达转换（6 × 5 = 30 条边），`jpg` / `jpe` 归一为 `jpeg`，`tif` 归一为 `tiff`。
 
 常见的两跳链路：
 
@@ -26,6 +29,7 @@ await convert(xlsxBuffer, 'xlsx', 'markdown');   // 直接命中
 await convert(csvText, 'csv', 'xlsx');           // 直接命中
 await convert(pptxBuffer, 'pptx', 'docx');       // pptx → markdown → docx
 await convert(pdfBuffer, 'pdf', 'markdown');     // pdf → text → markdown
+await convert(pngBuffer, 'jpg', 'webp');         // 直接命中
 ```
 
 `canConvert(from, to, { maxHops: 3 })` 可查询是否可达。
@@ -49,6 +53,9 @@ npm i fflate pptxgenjs # pptx 读取 / 生成
 # PDF
 npm i pdf-parse        # pdf 文本提取
 npm i pdfkit           # pdf 生成
+
+# 图片
+npm i sharp            # png / jpeg / webp / avif / tiff / gif 互转
 ```
 
 这些包声明为 `peerDependencies` 且全部 `optional: true`。未安装时只有对应格式的转换会失败，并抛出带安装命令的错误，其他格式不受影响。
@@ -120,6 +127,37 @@ await convert(md, 'markdown', 'pdf', {
 { fontPath?: string; size?: 'A4' | 'A3' | 'LETTER' | 'LEGAL'; margin?: number; fontSize?: number; title?: string }
 ```
 
+### 图片族
+
+```ts
+{
+  quality?: number;                 // 1–100，jpeg/webp/avif 默认 82
+  lossless?: boolean;               // webp / avif / tiff 无损
+  background?: string;              // 目标无 alpha 通道时的底色，默认 '#ffffff'
+  animated?: boolean;               // 保留多帧，仅对 gif / webp 目标生效
+}
+```
+
+```ts
+const webp = await convert(pngBuffer, 'png', 'webp', {
+  converterOptions: { quality: 75, lossless: false },
+});
+
+await writeFile('photo.jpg', webp.data as Uint8Array);
+```
+
+透明背景转成 `jpeg` 时会按 `background` 压平；EXIF 方向会在编码前自动摆正。
+
+除 `convert()` 外还有两个直连辅助函数：
+
+```ts
+import { convertImage, readImageInfo } from 'anyformat';
+
+const avif = await convertImage(pngBuffer, 'avif', { quality: 60 });
+const info = await readImageInfo(avif);
+// { format: 'heif', width, height, channels, hasAlpha, space, density, pages? }
+```
+
 ### 文本族
 
 ```ts
@@ -143,5 +181,6 @@ await convert(md, 'markdown', 'pdf', {
 - **`.doc` 只读**：OLE2/BIFF 二进制在纯 JS 中没有可靠的写入实现。需要 `.doc` 输出时用 `docx` 或 LibreOffice（`libreoffice --headless --convert-to doc`）
 - **`.ppt` 不支持**：请先转为 `.pptx`
 - **`.pdf` 只提取文本**：不还原表格、图片与版式；`pdf → xlsx` 这类结构性重建不可达
+- **图片只做像素级转码**：不做裁剪、缩放、滤镜；`bmp` / `heic` / `svg` 未登记为格式（`sharp` 未编译对应编码器时不保证可用）。GIF 输出固定走调色板量化，动态图需显式传 `animated: true`
 - **`markdown → html` 是子集实现**：覆盖标题、列表、引用、栅栏代码块、表格、链接/图片、粗斜体/删除线。需要完整 CommonMark 时用 `registerConverter()` 接入 `marked` / `remark`
 - **升级优先级**：同一格式对有多实现时按 `priority` 取最高者，可用 `findAll()` 查看全部

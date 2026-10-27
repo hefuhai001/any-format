@@ -181,6 +181,22 @@ describe('normalizeFormat', () => {
     assert.equal(normalizeFormat('  PDF '), 'pdf');
     assert.equal(normalizeFormat('Markdown'), 'markdown');
   });
+
+  it('folds common aliases into their canonical format', () => {
+    assert.equal(normalizeFormat('JPG'), 'jpeg');
+    assert.equal(normalizeFormat('jpe'), 'jpeg');
+    assert.equal(normalizeFormat('tif'), 'tiff');
+    // Unknown names are left untouched.
+    assert.equal(normalizeFormat('bmp'), 'bmp');
+  });
+
+  it('registers and finds converters under their canonical name', () => {
+    const registry = new ConverterRegistry();
+    registry.register({ from: 'jpg', to: 'png', convert: () => new Uint8Array([1]) });
+
+    assert.equal(registry.has('jpeg', 'png'), true);
+    assert.deepEqual(registry.entries().map((converter) => converter.from), ['jpeg']);
+  });
 });
 
 describe('UnsupportedConversionError', () => {

@@ -10,7 +10,7 @@
 import { canConvert as canConvertWith, runConversion } from './core/convert.js';
 import type { ConvertInput, ConvertOptions, ConvertResult, Format } from './core/types.js';
 import { registry } from './registry.js';
-import { OFFICE_FORMATS, READ_ONLY_FORMATS } from './adapters/index.js';
+import { IMAGE_FORMATS, OFFICE_FORMATS, READ_ONLY_FORMATS } from './adapters/index.js';
 
 /** Convert `input` from one format to another, chaining converters when needed. */
 export function convert(input: ConvertInput, from: Format, to: Format, options?: ConvertOptions): Promise<ConvertResult> {
@@ -29,7 +29,7 @@ export function listConverters(): Array<{ from: Format; to: Format; name?: strin
 
 /** Every format the library knows about, including optional ones. */
 export function listFormats(): Format[] {
-  const formats = new Set<Format>(['markdown', 'html', 'text', 'csv', 'tsv', 'json', ...OFFICE_FORMATS]);
+  const formats = new Set<Format>(['markdown', 'html', 'text', 'csv', 'tsv', 'json', ...OFFICE_FORMATS, ...IMAGE_FORMATS]);
   for (const converter of registry.entries()) {
     formats.add(converter.from);
     formats.add(converter.to);
@@ -65,6 +65,7 @@ export { parseHtmlTable, parseMarkdownTable, renderHtmlTable, renderMarkdownTabl
 
 // Adapters
 export { officeConverters, OFFICE_FORMATS } from './adapters/index.js';
+export { convertImage, imageConverters, IMAGE_FORMATS, readImageInfo } from './adapters/index.js';
 
 // Types
 export type { CsvParseOptions, CsvSerializeOptions } from './converters/csv/index.js';
@@ -78,6 +79,9 @@ export type {
   DocReadOptions,
   DocxReadOptions,
   DocxWriteOptions,
+  ImageConvertOptions,
+  ImageFormat,
+  ImageInfo,
   PdfReadOptions,
   PdfWriteOptions,
   PptxReadOptions,

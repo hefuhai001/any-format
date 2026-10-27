@@ -45,6 +45,7 @@ src/
     ├── blocks/               # types / parse / inline / text —— 供 docx·pdf·pptx 复用
     ├── docx/                 # read（mammoth）/ write（docx）
     ├── pdf/                  # read（pdf-parse）/ write（pdfkit）
+    ├── image/                # convert / read（sharp）
     ├── pptx/                 # read（fflate）/ serialize / write（pptxgenjs）
     ├── xlsx/                 # read / write（SheetJS）
     └── doc.ts                # 老式 .doc 只读
@@ -72,7 +73,7 @@ src/
 test/
 ├── core/          # 注册表、路径搜索、调度、探测、错误
 ├── converters/    # markdown / html / csv / table / text
-├── adapters/      # 懒加载、docx / xlsx / pptx / pdf / doc
+├── adapters/      # 懒加载、docx / xlsx / pptx / pdf / doc / image
 └── integration.test.ts   # 格式矩阵、真实链路往返、扩展性
 ```
 
@@ -82,12 +83,13 @@ test/
 - Office/PDF 用例真实生成并回读文件（校验 ZIP / OLE2 / `%PDF-` 文件头），不使用 mock
 - 边界优先：空输入、畸形输入、错误分支、取消信号、选项传递
 
-当前 273 项用例，行覆盖率约 88%。
+当前 288 项用例，行覆盖率约 88%。
 
 ## 路线图
 
 - [x] 表格族内置转换：`csv ↔ tsv ↔ json ↔ markdown table ↔ html table`
 - [x] `docx` / `xlsx` / `xls` / `pptx` / `pdf` / `doc` 适配器
+- [x] 图片互转：`png` / `jpeg` / `webp` / `avif` / `tiff` / `gif`（`sharp` 引擎）
 - [ ] `.ppt`（老版 PowerPoint）支持
 - [ ] 可选 LibreOffice 后端，覆盖 `.doc` 写入与高保真互转
 - [ ] 流式 API（`convertStream()`）处理大文件
