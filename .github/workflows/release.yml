@@ -1,7 +1,8 @@
-name: Verify release
+name: Release
 
-# Tag pushed → typecheck, test, build, and publish a tarball artifact.
-# The project is distributed via GitHub, so nothing is pushed to npm here.
+# Tag pushed → typecheck, test, build, pack a tarball, then create the GitHub
+# Release with the notes from docs/releases/<tag>.md (generated notes as a
+# fallback). The project is distributed via GitHub, so nothing goes to npm.
 on:
   push:
     tags:
@@ -9,10 +10,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  verify:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,11 +34,24 @@ jobs:
       - name: Pack tarball
         run: npm pack
 
-      - uses: actions/upload-artifact@v4
+      - name: Locate release notes
+        id: notes
+        run: |
+          file="docs/releases/${GITHUB_REF_NAME}.md"
+          if [ -f "$file" ]; then
+            echo "file=$file" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
         with:
-          name: anyformat-tarball
-          path: '*.tgz'
-          retention-days: 90
+          name: ${{ github.ref_name }}
+          body_path: ${{ steps.notes.outputs.file }}
+          generate_release_notes: ${{ steps.notes.outputs.file == '' }}
+          files: '*.tgz'
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false
 
       # Publishing to npm is intentionally disabled. To enable it, register the
       # package, then either bind a Trusted Publisher on npmjs.com or add an

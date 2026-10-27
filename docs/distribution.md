@@ -63,12 +63,18 @@ GitHub 直装依赖 `prepare` 脚本，npm 会：
 
 ## 发版流程
 
+1. 写版本说明：`docs/releases/v<version>.md`（Release 正文），并同步 `CHANGELOG.md`
+2. 升版本号并打附注 tag，tag 说明直接复用同一份文件
+3. 推送提交与 tag
+
 ```bash
-npm version patch -m "release: v%s"   # 或 minor / major
+npm version patch --no-git-tag-version        # 或 minor / major
+git add -A && git commit -m "chore: release v%s"
+git tag -a v0.0.2 -F docs/releases/v0.0.2.md
 git push --follow-tags
 ```
 
-`.github/workflows/release.yml` 监听 `v*` tag，执行类型检查 → 测试 → 构建 → `publint` 校验 → 打包，并把 `any-format-<version>.tgz` 作为 artifact 保留 90 天，可下载后离线分发。
+`.github/workflows/release.yml` 监听 `v*` tag：类型检查 → 测试 → 构建 → `publint` 校验 → `npm pack` → **自动创建 GitHub Release**。正文取 `docs/releases/<tag>.md`，文件不存在时退化为按提交自动生成的说明；`any-format-<version>.tgz` 作为 Release 附件上传，同时保留 90 天的 workflow artifact，可下载后离线分发。
 
 **不会发布到 npm**：`npm publish` 步骤以注释形式保留在 workflow 里，将来需要时取消注释并配置 `NPM_TOKEN`（或 Trusted Publisher）即可。
 

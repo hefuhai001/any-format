@@ -133,6 +133,7 @@ See **[API reference](./docs/api.md)** for full signatures, standalone registrie
 | [Formats](./docs/formats.md) | Matrix, optional engines, binary usage, CJK PDF, known limits |
 | [Distribution](./docs/distribution.md) | GitHub install, tarball, local linking, release flow |
 | [Development](./docs/development.md) | Layout, design notes, code and test conventions, roadmap |
+| [Changelog](./CHANGELOG.md) | Per-release highlights, API changes and known limits |
 
 ## License
 

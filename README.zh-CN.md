@@ -133,6 +133,7 @@ console.log(await resolveFfmpeg()); // 查看实际使用的 ffmpeg
 | [格式支持](./docs/formats.md) | 矩阵、可选引擎、二进制用法、中文 PDF、已知限制 |
 | [分发与安装](./docs/distribution.md) | GitHub 直装、tarball、本地联调、发版流程 |
 | [开发指南](./docs/development.md) | 目录结构、设计要点、代码与测试约定、路线图 |
+| [更新日志](./CHANGELOG.md) | 各版本的能力、API 变更与已知限制 |
 
 ## License
 
