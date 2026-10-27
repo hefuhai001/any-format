@@ -1,41 +1,43 @@
+**English** | [简体中文](./README.zh-CN.md)
+
 # anyformat
 
-轻量、可插拔的文档格式转换基础库。文本与表格转换零依赖，Office/PDF 按需加载引擎。
+A lightweight, plugin-based document conversion library. Text and table conversions have zero runtime dependencies; Office/PDF/image engines are loaded on demand.
 
-> **尚未发布到 npm**，请从 GitHub 安装（见下方）。
+> **Not yet published to npm** — install from GitHub (see below).
 
-## 特性
+## Features
 
-- **任意互转**：`markdown` `html` `text` `csv` `tsv` `json` 全互通，`docx` `doc` `xlsx` `xls` `pptx` `pdf` 双向接入，`png` `jpeg` `webp` `avif` `tiff` `gif` 图片两两互转
-- **自动中转**：没有直接转换器时按格式图 BFS 找最短路径，如 `docx → html → pdf`
-- **零运行时依赖**：核心与文本/表格转换器为手写实现，Office/PDF 引擎懒加载
-- **可扩展**：任何格式对都可通过 `registerConverter()` 注册，支持优先级与注销
-- **ESM + CJS**：`import` 与 `require` 均可，自带 `.d.ts`
+- **Any-to-any**: `markdown` `html` `text` `csv` `tsv` `json` interoperate freely; `docx` `doc` `xlsx` `xls` `pptx` `pdf` are wired in both directions; `png` `jpeg` `webp` `avif` `tiff` `gif` convert pairwise
+- **Automatic chaining**: when no direct converter exists, a BFS over the format graph finds the shortest route, e.g. `docx → html → pdf`
+- **Zero runtime dependencies**: core plus text/table converters are hand-written; Office/PDF engines are lazy-loaded
+- **Extensible**: any format pair can be added with `registerConverter()`, with priorities and disposal
+- **ESM + CJS**: works with both `import` and `require`, ships `.d.ts`
 
-## 安装
+## Install
 
 ```bash
-# 锁定 tag（推荐）
+# Pin a tag (recommended)
 npm i github:hefuhai001/format-conversion#v0.0.1
 
-# 跟随主干
+# Or track the main branch
 npm i github:hefuhai001/format-conversion
 ```
 
-依赖 `prepare` 脚本在安装时自动构建，要求 Node.js >= 18。安装细节与其他分发方式见 **[分发与安装](./docs/distribution.md)**。
+A `prepare` script builds the package on install; Node.js >= 18 is required. See **[Distribution](./docs/distribution.md)** for other options (install details are in Chinese).
 
-用到 Office/PDF 时按需安装对应引擎，未安装只影响该格式：
+Office/PDF/image formats need their engine installed on demand — a missing engine only affects that format:
 
 ```bash
-npm i mammoth docx      # docx 读写
-npm i xlsx              # xlsx / xls 读写
-npm i fflate pptxgenjs  # pptx 读写
-npm i pdf-parse pdfkit  # pdf 读写
-npm i word-extractor    # 老式 .doc 读取
-npm i sharp             # png / jpeg / webp / avif / tiff / gif 互转
+npm i mammoth docx      # docx read / write
+npm i xlsx              # xlsx / xls read / write
+npm i fflate pptxgenjs  # pptx read / write
+npm i pdf-parse pdfkit  # pdf read / write
+npm i word-extractor    # legacy .doc read
+npm i sharp             # png / jpeg / webp / avif / tiff / gif
 ```
 
-## 快速开始
+## Quick start
 
 ```ts
 import { convert } from 'anyformat';
@@ -45,54 +47,54 @@ const { data, path } = await convert('# Hello\n\n**world**', 'markdown', 'html')
 // path: ['markdown', 'html']
 ```
 
-链式转换自动中转：
+Chained conversions are resolved automatically:
 
 ```ts
 const result = await convert(docxBuffer, 'docx', 'pdf');
 result.path; // ['docx', 'html', 'pdf']
 ```
 
-二进制格式传 `Buffer`/`Uint8Array`，输出 `Uint8Array`：
+Binary formats take a `Buffer`/`Uint8Array` and return a `Uint8Array`:
 
 ```ts
 import { readFile, writeFile } from 'node:fs/promises';
 
-const docx = await readFile('report.docx');            // 不要传 'utf8'
+const docx = await readFile('report.docx');            // do not pass 'utf8'
 const { data } = await convert(docx, 'docx', 'markdown');
 
-const pdf = await convert('# 报告', 'markdown', 'pdf');
+const pdf = await convert('# Report', 'markdown', 'pdf');
 await writeFile('out.pdf', pdf.data as Uint8Array);
 ```
 
-## 格式支持
+## Supported formats
 
-| 格式 | 读 | 写 | 依赖 |
+| Format | Read | Write | Dependency |
 | --- | --- | --- | --- |
-| `markdown` `html` `text` `csv` `tsv` `json` | ✓ | ✓ | 无 |
+| `markdown` `html` `text` `csv` `tsv` `json` | ✓ | ✓ | none |
 | `docx` | ✓ | ✓ | `mammoth` / `docx` |
 | `xlsx` / `xls` | ✓ | ✓ | `xlsx` |
 | `pptx` | ✓ | ✓ | `fflate` / `pptxgenjs` |
-| `pdf` | ✓（仅文本） | ✓ | `pdf-parse` / `pdfkit` |
-| `doc` | ✓（仅文本） | ✗ | `word-extractor` |
+| `pdf` | ✓ (text only) | ✓ | `pdf-parse` / `pdfkit` |
+| `doc` | ✓ (text only) | ✗ | `word-extractor` |
 | `png` `jpeg` `webp` `avif` `tiff` `gif` | ✓ | ✓ | `sharp` |
 
-完整矩阵、各格式选项与限制见 **[格式支持](./docs/formats.md)**。
+See **[Formats](./docs/formats.md)** for the full matrix, per-format options and limitations (in Chinese).
 
-## 常用 API
+## Common API
 
 ```ts
 import { canConvert, convert, detectFormat, registerConverter } from 'anyformat';
 
-// 转换；options 支持 converterOptions / via / maxHops / signal
+// Convert; options accept converterOptions / via / maxHops / signal
 await convert(input, 'markdown', 'text', { maxHops: 3 });
 
-// 只查路径，不执行
+// Check the route without running it
 canConvert('markdown', 'text');       // true
 
-// 格式探测
+// Format sniffing
 detectFormat('# Title\n\n- a\n- b');  // { format: 'markdown', confidence: 0.95 }
 
-// 注册自定义转换器，返回注销函数
+// Register a custom converter; returns a disposer
 const dispose = registerConverter({
   from: 'text',
   to: 'upper',
@@ -100,26 +102,26 @@ const dispose = registerConverter({
 });
 ```
 
-图片除 `convert()` 外还提供两个直连辅助函数：
+Images also ship two direct helpers alongside `convert()`:
 
 ```ts
 import { convertImage, readImageInfo } from 'anyformat';
 
-// 等同 convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
+// Same as convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });
 const { width, height, hasAlpha } = await readImageInfo(webp);
 ```
 
-完整签名、独立注册表、错误类型与全部导出见 **[API 参考](./docs/api.md)**。
+See **[API reference](./docs/api.md)** for full signatures, standalone registries, error types and every export (in Chinese).
 
-## 文档
+## Docs
 
-| 文档 | 内容 |
+| Doc | Contents |
 | --- | --- |
-| [API 参考](./docs/api.md) | `convert` 选项、链式与取消、探测器、注册表、错误处理 |
-| [格式支持](./docs/formats.md) | 矩阵、可选引擎、二进制用法、中文 PDF、已知限制 |
-| [分发与安装](./docs/distribution.md) | GitHub 直装、tarball、本地联调、发版流程 |
-| [开发指南](./docs/development.md) | 目录结构、设计要点、代码与测试约定、路线图 |
+| [API reference](./docs/api.md) | `convert` options, chaining and cancellation, detectors, registry, errors |
+| [Formats](./docs/formats.md) | Matrix, optional engines, binary usage, CJK PDF, known limits |
+| [Distribution](./docs/distribution.md) | GitHub install, tarball, local linking, release flow |
+| [Development](./docs/development.md) | Layout, design notes, code and test conventions, roadmap |
 
 ## License
 
