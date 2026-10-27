@@ -78,6 +78,35 @@ git push --follow-tags
 
 **不会发布到 npm**：`npm publish` 步骤以注释形式保留在 workflow 里，将来需要时取消注释并配置 `NPM_TOKEN`（或 Trusted Publisher）即可。
 
+## Gitee 镜像发版
+
+GitHub 为主仓，Gitee 作为镜像并单独发布发行版（`gitee` remote 指向 `git@gitee.com:hefuhai001/any-format.git`）。
+
+### 推送代码与标签
+
+```bash
+git push gitee master
+git push gitee --tags
+```
+
+### Gitee Go 流水线
+
+`.workflow/release.yml` 监听 `v*` tag：安装依赖 → 类型检查 → 测试 → 构建 → `publint` 校验 → `npm pack` → 创建 Gitee 发行版并上传 `any-format-<version>.tgz`。
+
+需要在 Gitee 仓库「流水线 → 变量」中配置 `GITEE_TOKEN`（私人令牌，勾选 `projects` 与 `releases` 权限）。未配置时脚本只跳过发布步骤，校验与打包照常执行，流水线不会失败。
+
+### 本地手动发布
+
+```bash
+npm run build && npm pack
+npm run release:gitee              # 等价于 node scripts/gitee-release.mjs
+node scripts/gitee-release.mjs --dry-run   # 只打印将要发布的内容
+```
+
+Windows PowerShell 临时设置令牌：`$env:GITEE_TOKEN='xxx'; npm run release:gitee`。
+
+脚本读取 `package.json` 的版本与 `docs/releases/v<version>.md`：发行版已存在时改为覆盖说明，同名附件已存在则跳过上传。可用 `--tag`、`--file`、`--notes-file` 覆盖默认值。
+
 ### 若将来要发布到 npm
 
 1. 确认包名可用：`npm view any-format version` 应返回 404

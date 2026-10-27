@@ -105,6 +105,7 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "node --test --import tsx \"test/**/*.test.ts\"",
+    "release:gitee": "node scripts/gitee-release.mjs",
     "test:coverage": "node --test --import tsx --experimental-test-coverage \"test/**/*.test.ts\"",
     "lint": "tsc --noEmit",
     "prepare": "npm run build",

@@ -1,0 +1,35 @@
+# Gitee Go 流水线：校验 → 构建 → 打包 → 发布 Gitee 发行版
+# 触发：推送 v 开头的 tag（如 v0.0.2）
+# 依赖：在流水线「变量」中配置 GITEE_TOKEN（Gitee 私人令牌，勾选 projects/releases 权限）
+#       未配置时脚本会跳过发布步骤，只做校验与打包，不会让流水线失败
+
+version: '1.0'
+
+name: release
+displayName: '发布流水线'
+
+triggers:
+  push:
+    tags:
+      prefix:
+        - v
+
+stages:
+  - stage:
+      name: release-stage
+      displayName: '校验、构建与发布'
+      steps:
+        - step: npmbuild@1
+          name: verify-build-release
+          displayName: '校验 → 构建 → 打包 → 发布'
+          inputs:
+            nodeVersion: 20
+            goals: |
+              set -e
+              npm ci
+              npm run typecheck
+              npm test
+              npm run build
+              npx --yes publint
+              npm pack
+              node scripts/gitee-release.mjs
