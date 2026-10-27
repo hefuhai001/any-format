@@ -13,7 +13,11 @@
     "image",
     "png",
     "jpeg",
-    "webp"
+    "webp",
+    "audio",
+    "mp3",
+    "wav",
+    "flac"
   ],
   "license": "MIT",
   "author": "hefuhai001",
@@ -67,15 +71,33 @@
     "xlsx": ">=0.18.5"
   },
   "peerDependenciesMeta": {
-    "docx": { "optional": true },
-    "fflate": { "optional": true },
-    "mammoth": { "optional": true },
-    "pdf-parse": { "optional": true },
-    "pdfkit": { "optional": true },
-    "pptxgenjs": { "optional": true },
-    "sharp": { "optional": true },
-    "word-extractor": { "optional": true },
-    "xlsx": { "optional": true }
+    "docx": {
+      "optional": true
+    },
+    "fflate": {
+      "optional": true
+    },
+    "mammoth": {
+      "optional": true
+    },
+    "pdf-parse": {
+      "optional": true
+    },
+    "pdfkit": {
+      "optional": true
+    },
+    "pptxgenjs": {
+      "optional": true
+    },
+    "sharp": {
+      "optional": true
+    },
+    "word-extractor": {
+      "optional": true
+    },
+    "xlsx": {
+      "optional": true
+    }
   },
   "scripts": {
     "build": "tsup",
@@ -91,6 +113,7 @@
     "@types/node": "^22.10.2",
     "docx": "^9.14.0",
     "fflate": "^0.8.3",
+    "ffmpeg-static": "^5.3.0",
     "mammoth": "^1.13.0",
     "pdf-parse": "^2.4.5",
     "pdfkit": "^0.20.2",

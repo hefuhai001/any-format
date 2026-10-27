@@ -190,6 +190,11 @@ import {
   IMAGE_FORMATS,       // ['png', 'jpeg', 'webp', 'avif', 'tiff', 'gif']
   convertImage,        // 图片转码直连，跳过调度
   readImageInfo,       // 读取图片元信息
+  audioConverters,     // 音频转换器数组（ffmpeg）
+  AUDIO_FORMATS,       // ['wav', 'mp3', 'flac', 'ogg', 'aac', 'm4a']
+  convertAudio,        // 音频转码直连，跳过调度
+  buildAudioArgs,      // 生成 ffmpeg 参数，便于调试
+  resolveFfmpeg,       // 解析实际使用的 ffmpeg 路径
   listFormats,         // 已知格式名
   listConverters,      // { from, to, name, priority }[]
   READ_ONLY_FORMATS,   // ['doc', 'pdf']

@@ -8,7 +8,7 @@
 
 ## 特性
 
-- **任意互转**：`markdown` `html` `text` `csv` `tsv` `json` 全互通，`docx` `doc` `xlsx` `xls` `pptx` `pdf` 双向接入，`png` `jpeg` `webp` `avif` `tiff` `gif` 图片两两互转
+- **任意互转**：`markdown` `html` `text` `csv` `tsv` `json` 全互通，`docx` `doc` `xlsx` `xls` `pptx` `pdf` 双向接入，`png` `jpeg` `webp` `avif` `tiff` `gif` 图片与 `wav` `mp3` `flac` `ogg` `aac` `m4a` 音频两两互转
 - **自动中转**：没有直接转换器时按格式图 BFS 找最短路径，如 `docx → html → pdf`
 - **零运行时依赖**：核心与文本/表格转换器为手写实现，Office/PDF 引擎懒加载
 - **可扩展**：任何格式对都可通过 `registerConverter()` 注册，支持优先级与注销
@@ -26,7 +26,7 @@ npm i github:hefuhai001/any-format
 
 依赖 `prepare` 脚本在安装时自动构建，要求 Node.js >= 18。安装细节与其他分发方式见 **[分发与安装](./docs/distribution.md)**。
 
-用到 Office/PDF 时按需安装对应引擎，未安装只影响该格式：
+用到 Office/PDF/图片/音频时按需安装对应引擎，未安装只影响该格式：
 
 ```bash
 npm i mammoth docx      # docx 读写
@@ -35,6 +35,7 @@ npm i fflate pptxgenjs  # pptx 读写
 npm i pdf-parse pdfkit  # pdf 读写
 npm i word-extractor    # 老式 .doc 读取
 npm i sharp             # png / jpeg / webp / avif / tiff / gif 互转
+npm i ffmpeg-static     # wav / mp3 / flac / ogg / aac / m4a（也可用系统 ffmpeg）
 ```
 
 ## 快速开始
@@ -77,6 +78,7 @@ await writeFile('out.pdf', pdf.data as Uint8Array);
 | `pdf` | ✓（仅文本） | ✓ | `pdf-parse` / `pdfkit` |
 | `doc` | ✓（仅文本） | ✗ | `word-extractor` |
 | `png` `jpeg` `webp` `avif` `tiff` `gif` | ✓ | ✓ | `sharp` |
+| `wav` `mp3` `flac` `ogg` `aac` `m4a` | ✓ | ✓ | `ffmpeg` |
 
 完整矩阵、各格式选项与限制见 **[格式支持](./docs/formats.md)**。
 
@@ -110,6 +112,15 @@ import { convertImage, readImageInfo } from 'any-format';
 // 等同 convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });
 const { width, height, hasAlpha } = await readImageInfo(webp);
+```
+
+音频依赖 `ffmpeg` 可执行文件，解析顺序为 `converterOptions.ffmpegPath` → `FFMPEG_PATH` → 可选包 `ffmpeg-static` → `PATH`：
+
+```ts
+import { convertAudio, resolveFfmpeg } from 'any-format';
+
+const mp3 = await convertAudio(wavBuffer, 'mp3', { bitrate: 192, sampleRate: 44100 });
+console.log(await resolveFfmpeg()); // 查看实际使用的 ffmpeg
 ```
 
 完整签名、独立注册表、错误类型与全部导出见 **[API 参考](./docs/api.md)**。

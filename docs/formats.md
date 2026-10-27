@@ -2,7 +2,7 @@
 
 ## 矩阵
 
-「读」= 可解析，「写」= 可生成。文本/表格族为纯 JS 实现，Office/PDF/图片依赖可选引擎。
+「读」= 可解析，「写」= 可生成。文本/表格族为纯 JS 实现，Office/PDF/图片/音频依赖可选引擎。
 
 | 格式 | 读 | 写 | 依赖 |
 | --- | --- | --- | --- |
@@ -18,8 +18,9 @@
 | `pdf` | ✓（仅文本） | ✓ | `pdf-parse` / `pdfkit` |
 | `doc` | ✓（仅文本） | ✗ | `word-extractor` |
 | `png` / `jpeg` / `webp` / `avif` / `tiff` / `gif` | ✓ | ✓ | `sharp` |
+| `wav` / `mp3` / `flac` / `ogg` / `aac` / `m4a` | ✓ | ✓ | `ffmpeg` |
 
-图片族任意两两互转都是直达转换（6 × 5 = 30 条边），`jpg` / `jpe` 归一为 `jpeg`，`tif` 归一为 `tiff`。
+图片族任意两两互转都是直达转换（6 × 5 = 30 条边），`jpg` / `jpe` 归一为 `jpeg`，`tif` 归一为 `tiff`。音频族同样是 30 条直达边。
 
 常见的两跳链路：
 
@@ -30,6 +31,7 @@ await convert(csvText, 'csv', 'xlsx');           // 直接命中
 await convert(pptxBuffer, 'pptx', 'docx');       // pptx → markdown → docx
 await convert(pdfBuffer, 'pdf', 'markdown');     // pdf → text → markdown
 await convert(pngBuffer, 'jpg', 'webp');         // 直接命中
+await convert(wavBuffer, 'wav', 'mp3');          // 直接命中
 ```
 
 `canConvert(from, to, { maxHops: 3 })` 可查询是否可达。
@@ -56,6 +58,9 @@ npm i pdfkit           # pdf 生成
 
 # 图片
 npm i sharp            # png / jpeg / webp / avif / tiff / gif 互转
+
+# 音频
+npm i ffmpeg-static    # 内置 ffmpeg 二进制；也可改用系统 ffmpeg
 ```
 
 这些包声明为 `peerDependencies` 且全部 `optional: true`。未安装时只有对应格式的转换会失败，并抛出带安装命令的错误，其他格式不受影响。
@@ -158,6 +163,37 @@ const info = await readImageInfo(avif);
 // { format: 'heif', width, height, channels, hasAlpha, space, density, pages? }
 ```
 
+### 音频族
+
+```ts
+{
+  bitrate?: number;          // kbps，有损目标默认 192；ogg 会换算成 -q:a
+  sampleRate?: number;       // 重采样，例如 44100
+  channels?: number;         // 声道数，1 = 单声道
+  compressionLevel?: number; // flac 0–12，默认 5
+  ffmpegPath?: string;       // 指定 ffmpeg 可执行文件
+}
+```
+
+```ts
+const mp3 = await convert(wavBuffer, 'wav', 'mp3', {
+  converterOptions: { bitrate: 128, sampleRate: 44100, channels: 2 },
+});
+
+await writeFile('voice.mp3', mp3.data as Uint8Array);
+```
+
+解码与编码都通过 stdin/stdout 管道完成，不落临时文件；只有 `m4a` 使用临时文件（ipod/mp4 复用器要求输出可 seek），用完即删。WAV 输出会把 ffmpeg 留下的流式长度占位符补齐，生成标准文件头。
+
+ffmpeg 可执行文件的解析顺序：`converterOptions.ffmpegPath` → 环境变量 `FFMPEG_PATH` → 可选包 `ffmpeg-static` → `PATH` 里的 `ffmpeg`。都没找到时会抛出带安装提示的错误：
+
+```ts
+import { convertAudio, resolveFfmpeg } from 'any-format';
+
+const flac = await convertAudio(wavBuffer, 'flac', { compressionLevel: 9 });
+await resolveFfmpeg(); // 当前会使用哪个 ffmpeg
+```
+
 ### 文本族
 
 ```ts
@@ -182,5 +218,6 @@ const info = await readImageInfo(avif);
 - **`.ppt` 不支持**：请先转为 `.pptx`
 - **`.pdf` 只提取文本**：不还原表格、图片与版式；`pdf → xlsx` 这类结构性重建不可达
 - **图片只做像素级转码**：不做裁剪、缩放、滤镜；`bmp` / `heic` / `svg` 未登记为格式（`sharp` 未编译对应编码器时不保证可用）。GIF 输出固定走调色板量化，动态图需显式传 `animated: true`
+- **音频依赖外部 ffmpeg**：`ogg` 固定为 Vorbis（有损时用 VBR，`bitrate` 会换算成 `-q:a`），需要 Opus 时用 `ffmpeg` 自行转；不处理视频轨，也不提供流式 API。大文件会整体读入内存
 - **`markdown → html` 是子集实现**：覆盖标题、列表、引用、栅栏代码块、表格、链接/图片、粗斜体/删除线。需要完整 CommonMark 时用 `registerConverter()` 接入 `marked` / `remark`
 - **升级优先级**：同一格式对有多实现时按 `priority` 取最高者，可用 `findAll()` 查看全部

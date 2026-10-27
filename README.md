@@ -8,7 +8,7 @@ A lightweight, plugin-based document conversion library. Text and table conversi
 
 ## Features
 
-- **Any-to-any**: `markdown` `html` `text` `csv` `tsv` `json` interoperate freely; `docx` `doc` `xlsx` `xls` `pptx` `pdf` are wired in both directions; `png` `jpeg` `webp` `avif` `tiff` `gif` convert pairwise
+- **Any-to-any**: `markdown` `html` `text` `csv` `tsv` `json` interoperate freely; `docx` `doc` `xlsx` `xls` `pptx` `pdf` are wired in both directions; `png` `jpeg` `webp` `avif` `tiff` `gif` images and `wav` `mp3` `flac` `ogg` `aac` `m4a` audio convert pairwise
 - **Automatic chaining**: when no direct converter exists, a BFS over the format graph finds the shortest route, e.g. `docx → html → pdf`
 - **Zero runtime dependencies**: core plus text/table converters are hand-written; Office/PDF engines are lazy-loaded
 - **Extensible**: any format pair can be added with `registerConverter()`, with priorities and disposal
@@ -26,7 +26,7 @@ npm i github:hefuhai001/any-format
 
 A `prepare` script builds the package on install; Node.js >= 18 is required. See **[Distribution](./docs/distribution.md)** for other options (install details are in Chinese).
 
-Office/PDF/image formats need their engine installed on demand — a missing engine only affects that format:
+Office/PDF/image/audio formats need their engine installed on demand — a missing engine only affects that format:
 
 ```bash
 npm i mammoth docx      # docx read / write
@@ -35,6 +35,7 @@ npm i fflate pptxgenjs  # pptx read / write
 npm i pdf-parse pdfkit  # pdf read / write
 npm i word-extractor    # legacy .doc read
 npm i sharp             # png / jpeg / webp / avif / tiff / gif
+npm i ffmpeg-static     # wav / mp3 / flac / ogg / aac / m4a (or a system ffmpeg)
 ```
 
 ## Quick start
@@ -77,6 +78,7 @@ await writeFile('out.pdf', pdf.data as Uint8Array);
 | `pdf` | ✓ (text only) | ✓ | `pdf-parse` / `pdfkit` |
 | `doc` | ✓ (text only) | ✗ | `word-extractor` |
 | `png` `jpeg` `webp` `avif` `tiff` `gif` | ✓ | ✓ | `sharp` |
+| `wav` `mp3` `flac` `ogg` `aac` `m4a` | ✓ | ✓ | `ffmpeg` |
 
 See **[Formats](./docs/formats.md)** for the full matrix, per-format options and limitations (in Chinese).
 
@@ -110,6 +112,15 @@ import { convertImage, readImageInfo } from 'any-format';
 // Same as convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });
 const { width, height, hasAlpha } = await readImageInfo(webp);
+```
+
+Audio uses the `ffmpeg` binary, resolved from `converterOptions.ffmpegPath`, then `FFMPEG_PATH`, then the optional `ffmpeg-static` package, then `PATH`:
+
+```ts
+import { convertAudio, resolveFfmpeg } from 'any-format';
+
+const mp3 = await convertAudio(wavBuffer, 'mp3', { bitrate: 192, sampleRate: 44100 });
+console.log(await resolveFfmpeg()); // which ffmpeg will be used
 ```
 
 See **[API reference](./docs/api.md)** for full signatures, standalone registries, error types and every export (in Chinese).

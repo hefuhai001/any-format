@@ -33,6 +33,14 @@ const EXTENSION_MAP: Record<string, string> = {
   tif: 'tiff',
   tiff: 'tiff',
   gif: 'gif',
+  wav: 'wav',
+  wave: 'wav',
+  mp3: 'mp3',
+  flac: 'flac',
+  ogg: 'ogg',
+  oga: 'ogg',
+  aac: 'aac',
+  m4a: 'm4a',
 };
 
 const MIME_MAP: Record<string, string> = {
@@ -61,6 +69,18 @@ const MIME_MAP: Record<string, string> = {
   'image/avif': 'avif',
   'image/tiff': 'tiff',
   'image/gif': 'gif',
+  'audio/wav': 'wav',
+  'audio/x-wav': 'wav',
+  'audio/wave': 'wav',
+  'audio/mpeg': 'mp3',
+  'audio/mp3': 'mp3',
+  'audio/flac': 'flac',
+  'audio/x-flac': 'flac',
+  'audio/ogg': 'ogg',
+  'audio/aac': 'aac',
+  'audio/mp4': 'm4a',
+  'audio/m4a': 'm4a',
+  'audio/x-m4a': 'm4a',
 };
 
 /** Resolve a format from a file path or name. */

@@ -24,6 +24,7 @@ export const OFFICE_FORMATS: readonly Format[] = ['docx', 'doc', 'xlsx', 'xls', 
 /** Formats the library can only read, never write. */
 export const READ_ONLY_FORMATS: readonly Format[] = ['doc', 'pdf'];
 
+export { AUDIO_FORMATS, audioConverters, buildAudioArgs, convertAudio, resolveFfmpeg } from './audio/index.js';
 export { docConverters } from './doc.js';
 export { docxConverters, readDocxHtml, textToBlocks, writeDocx } from './docx/index.js';
 export { convertImage, imageConverters, IMAGE_FORMATS, readImageInfo } from './image/index.js';
@@ -34,6 +35,7 @@ export { cleanInline, parseInlineRuns, parseMarkdownBlocks } from './blocks/inde
 export { asBuffer, asText, optionalImport } from './loader.js';
 
 export type { Block, InlineRun } from './blocks/index.js';
+export type { AudioConvertOptions, AudioFormat } from './audio/index.js';
 export type { DocReadOptions } from './doc.js';
 export type { DocxReadOptions, DocxWriteOptions } from './docx/index.js';
 export type { ImageConvertOptions, ImageFormat, ImageInfo } from './image/index.js';
