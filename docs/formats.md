@@ -66,7 +66,7 @@ npm i sharp            # png / jpeg / webp / avif / tiff / gif 互转
 
 ```ts
 import { readFile, writeFile } from 'node:fs/promises';
-import { convert } from 'anyformat';
+import { convert } from 'any-format';
 
 const docx = await readFile('report.docx');   // 不要传 'utf8'
 const { data } = await convert(docx, 'docx', 'markdown');  // string
@@ -151,7 +151,7 @@ await writeFile('photo.jpg', webp.data as Uint8Array);
 除 `convert()` 外还有两个直连辅助函数：
 
 ```ts
-import { convertImage, readImageInfo } from 'anyformat';
+import { convertImage, readImageInfo } from 'any-format';
 
 const avif = await convertImage(pngBuffer, 'avif', { quality: 60 });
 const info = await readImageInfo(avif);

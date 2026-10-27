@@ -1,5 +1,5 @@
 {
-  "name": "anyformat",
+  "name": "any-format",
   "version": "0.0.1",
   "description": "A lightweight, plugin-based document format conversion library for Node.js",
   "keywords": [
@@ -19,11 +19,11 @@
   "author": "hefuhai001",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hefuhai001/format-conversion.git"
+    "url": "git+https://github.com/hefuhai001/any-format.git"
   },
-  "homepage": "https://github.com/hefuhai001/format-conversion#readme",
+  "homepage": "https://github.com/hefuhai001/any-format#readme",
   "bugs": {
-    "url": "https://github.com/hefuhai001/format-conversion/issues"
+    "url": "https://github.com/hefuhai001/any-format/issues"
   },
   "publishConfig": {
     "access": "public"

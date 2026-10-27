@@ -1,6 +1,6 @@
 [English](./README.md) | **简体中文**
 
-# anyformat
+# any-format
 
 轻量、可插拔的文档格式转换基础库。文本与表格转换零依赖，Office/PDF/图片按需加载引擎。
 
@@ -18,10 +18,10 @@
 
 ```bash
 # 锁定 tag（推荐）
-npm i github:hefuhai001/format-conversion#v0.0.1
+npm i github:hefuhai001/any-format#v0.0.1
 
 # 跟随主干
-npm i github:hefuhai001/format-conversion
+npm i github:hefuhai001/any-format
 ```
 
 依赖 `prepare` 脚本在安装时自动构建，要求 Node.js >= 18。安装细节与其他分发方式见 **[分发与安装](./docs/distribution.md)**。
@@ -40,7 +40,7 @@ npm i sharp             # png / jpeg / webp / avif / tiff / gif 互转
 ## 快速开始
 
 ```ts
-import { convert } from 'anyformat';
+import { convert } from 'any-format';
 
 const { data, path } = await convert('# Hello\n\n**world**', 'markdown', 'html');
 // data: <h1>Hello</h1>\n\n<p><strong>world</strong></p>
@@ -83,7 +83,7 @@ await writeFile('out.pdf', pdf.data as Uint8Array);
 ## 常用 API
 
 ```ts
-import { canConvert, convert, detectFormat, registerConverter } from 'anyformat';
+import { canConvert, convert, detectFormat, registerConverter } from 'any-format';
 
 // 转换；options 支持 converterOptions / via / maxHops / signal
 await convert(input, 'markdown', 'text', { maxHops: 3 });
@@ -105,7 +105,7 @@ const dispose = registerConverter({
 图片除 `convert()` 外还提供两个直连辅助函数：
 
 ```ts
-import { convertImage, readImageInfo } from 'anyformat';
+import { convertImage, readImageInfo } from 'any-format';
 
 // 等同 convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });

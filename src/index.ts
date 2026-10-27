@@ -1,8 +1,8 @@
 /**
- * anyformat — lightweight, plugin-based document format conversion.
+ * any-format — lightweight, plugin-based document format conversion.
  *
  * ```ts
- * import { convert } from 'anyformat';
+ * import { convert } from 'any-format';
  * const { data } = await convert('# Hi', 'markdown', 'html');
  * ```
  */

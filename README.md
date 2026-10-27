@@ -1,6 +1,6 @@
 **English** | [简体中文](./README.zh-CN.md)
 
-# anyformat
+# any-format
 
 A lightweight, plugin-based document conversion library. Text and table conversions have zero runtime dependencies; Office/PDF/image engines are loaded on demand.
 
@@ -18,10 +18,10 @@ A lightweight, plugin-based document conversion library. Text and table conversi
 
 ```bash
 # Pin a tag (recommended)
-npm i github:hefuhai001/format-conversion#v0.0.1
+npm i github:hefuhai001/any-format#v0.0.1
 
 # Or track the main branch
-npm i github:hefuhai001/format-conversion
+npm i github:hefuhai001/any-format
 ```
 
 A `prepare` script builds the package on install; Node.js >= 18 is required. See **[Distribution](./docs/distribution.md)** for other options (install details are in Chinese).
@@ -40,7 +40,7 @@ npm i sharp             # png / jpeg / webp / avif / tiff / gif
 ## Quick start
 
 ```ts
-import { convert } from 'anyformat';
+import { convert } from 'any-format';
 
 const { data, path } = await convert('# Hello\n\n**world**', 'markdown', 'html');
 // data: <h1>Hello</h1>\n\n<p><strong>world</strong></p>
@@ -83,7 +83,7 @@ See **[Formats](./docs/formats.md)** for the full matrix, per-format options and
 ## Common API
 
 ```ts
-import { canConvert, convert, detectFormat, registerConverter } from 'anyformat';
+import { canConvert, convert, detectFormat, registerConverter } from 'any-format';
 
 // Convert; options accept converterOptions / via / maxHops / signal
 await convert(input, 'markdown', 'text', { maxHops: 3 });
@@ -105,7 +105,7 @@ const dispose = registerConverter({
 Images also ship two direct helpers alongside `convert()`:
 
 ```ts
-import { convertImage, readImageInfo } from 'anyformat';
+import { convertImage, readImageInfo } from 'any-format';
 
 // Same as convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });

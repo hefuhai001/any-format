@@ -22,7 +22,7 @@ export async function writePdf(blocks: Block[], options: PdfWriteOptions = {}): 
   const doc = new PDFDocument({
     size: options.size ?? 'A4',
     margin: options.margin ?? 56,
-    info: { Title: options.title ?? 'Document', Author: options.author ?? 'anyformat' },
+    info: { Title: options.title ?? 'Document', Author: options.author ?? 'any-format' },
   });
 
   const chunks: Buffer[] = [];

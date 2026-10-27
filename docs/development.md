@@ -3,8 +3,8 @@
 ## 本地准备
 
 ```bash
-git clone git@github.com:hefuhai001/format-conversion.git
-cd format-conversion
+git clone git@github.com:hefuhai001/any-format.git
+cd any-format
 npm install        # prepare 钩子会自动构建一次
 ```
 
