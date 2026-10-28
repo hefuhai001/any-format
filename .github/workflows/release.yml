@@ -37,16 +37,20 @@ jobs:
 
       - name: Publish to npm
         if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           name=$(node -p "require('./package.json').name")
           version=$(node -p "require('./package.json').version")
+          echo "package: ${name}@${version}"
+          npm whoami || echo "::warning::npm whoami 失败，检查 NPM_TOKEN 是否有效"
           if npm view "${name}@${version}" version >/dev/null 2>&1; then
-            echo "${name}@${version} 已存在，跳过发布"
-            exit 0
+            echo "::notice::${name}@${version} 已存在，跳过发布"
+          else
+            npm publish --access public
           fi
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # 发布后必须能在 registry 上查到，否则让流水线失败
+          npm view "${name}@${version}" version
 
       - name: Locate release notes
         id: notes
