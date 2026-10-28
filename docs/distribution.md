@@ -1,6 +1,15 @@
 # 分发与安装
 
-当前**不发布到 npm registry**，通过 GitHub 仓库直接安装。
+npm 包名为 **`@hefuhai001/any-format`**（`any-format` 这个名字在 npm 上已被他人占用），仓库名仍是 `any-format`。除 npm 外也支持直接从 GitHub 安装。
+
+## 从 npm 安装
+
+```bash
+npm i @hefuhai001/any-format
+
+# 指定版本
+npm i @hefuhai001/any-format@0.0.2
+```
 
 ## 从 GitHub 安装
 
@@ -9,7 +18,7 @@
 npm i github:hefuhai001/any-format
 
 # 锁定 tag（推荐用于生产）
-npm i github:hefuhai001/any-format#v0.0.1
+npm i github:hefuhai001/any-format#v0.0.2
 
 # 锁定到某个 commit
 npm i github:hefuhai001/any-format#a1b2c3d
@@ -20,7 +29,7 @@ npm i github:hefuhai001/any-format#a1b2c3d
 ```json
 {
   "dependencies": {
-    "any-format": "github:hefuhai001/any-format#v0.0.1"
+    "@hefuhai001/any-format": "github:hefuhai001/any-format#v0.0.2"
   }
 }
 ```
@@ -56,8 +65,8 @@ GitHub 直装依赖 `prepare` 脚本，npm 会：
 
 | 方式 | 命令 | 适用场景 |
 | --- | --- | --- |
-| tarball | `npm pack` → `npm i ./any-format-0.0.1.tgz` | 内网、离线、交付给无法访问 GitHub 的同学 |
-| 本地联调 | `npm link`（仓库内）→ `npm link any-format`（项目中） | 边改边用，无需发版 |
+| tarball | `npm pack` → `npm i ./hefuhai001-any-format-0.0.2.tgz` | 内网、离线、交付给无法访问 GitHub 的同学 |
+| 本地联调 | `npm link`（仓库内）→ `npm link @hefuhai001/any-format`（项目中） | 边改边用，无需发版 |
 | git submodule / monorepo | workspace 内直接引用路径 | 同一仓库多包协作 |
 | 私有 registry | Verdaccio，`npm publish --registry http://localhost:4873` | 团队统一源与缓存 |
 
@@ -74,9 +83,11 @@ git tag -a v0.0.2 -F docs/releases/v0.0.2.md
 git push --follow-tags
 ```
 
-`.github/workflows/release.yml` 监听 `v*` tag：类型检查 → 测试 → 构建 → `publint` 校验 → `npm pack` → **自动创建 GitHub Release**。正文取 `docs/releases/<tag>.md`，文件不存在时退化为按提交自动生成的说明；`any-format-<version>.tgz` 作为 Release 附件上传，同时保留 90 天的 workflow artifact，可下载后离线分发。
+`.github/workflows/release.yml` 监听 `v*` tag：类型检查 → 测试 → 构建 → `publint` 校验 → `npm pack` → **发布到 npm** → **创建 GitHub Release**。正文取 `docs/releases/<tag>.md`，文件不存在时退化为按提交自动生成的说明；`hefuhai001-any-format-<version>.tgz` 作为 Release 附件上传。
 
-**不会发布到 npm**：`npm publish` 步骤以注释形式保留在 workflow 里，将来需要时取消注释并配置 `NPM_TOKEN`（或 Trusted Publisher）即可。
+npm 发布使用仓库 Secret `NPM_TOKEN`（npm Automation 令牌），通过 `NODE_AUTH_TOKEN` 注入；发布前会先检查同名版本是否已存在，已发布则跳过，重复推 tag 不会报错。`prepublishOnly` 会在发布前自动重跑构建与测试。
+
+手动触发：在 Actions 里对 `Release` 工作流点 `Run workflow` 只做校验；`npm publish` 步骤限定 `refs/tags/v*`，不会误发。
 
 ## Gitee 镜像发版
 
@@ -107,11 +118,15 @@ Windows PowerShell 临时设置令牌：`$env:GITEE_TOKEN='xxx'; npm run release
 
 脚本读取 `package.json` 的版本与 `docs/releases/v<version>.md`：发行版已存在时改为覆盖说明，同名附件已存在则跳过上传。可用 `--tag`、`--file`、`--notes-file` 覆盖默认值。
 
-### 若将来要发布到 npm
+## npm 发布说明
 
-1. 确认包名可用：`npm view any-format version` 应返回 404
-2. `npm run typecheck && npm test && npx publint`
-3. `npm publish`（scoped 包需加 `--access public`，`publishConfig.access` 已配好）
-4. 首次发布后可在 npmjs.com 绑定 Trusted Publisher，后续交给 CI
+- 包名 `@hefuhai001/any-format`：`any-format` 在 npm 已被他人占用（不同项目），因此改用作用域包名；仓库名仍为 `any-format`
+- `publishConfig.access` 已设为 `public`，scoped 包默认私有，发布时会显式带 `--access public`
+- CI 使用 `NPM_TOKEN`（Automation 类型令牌）；本地手动发布：
 
-`prepublishOnly` 会在发布前自动重跑构建与测试。
+```bash
+npm run typecheck && npm test && npx publint
+npm publish --access public          # 需已 npm login
+```
+
+- 将来可改用 npm 的 Trusted Publisher（OIDC），届时把 workflow 的发布步骤换成 `npm publish --provenance` 并赋予 `id-token: write` 权限，即可去掉长期令牌。

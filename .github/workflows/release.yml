@@ -1,8 +1,8 @@
 name: Release
 
-# Tag pushed → typecheck, test, build, pack a tarball, then create the GitHub
-# Release with the notes from docs/releases/<tag>.md (generated notes as a
-# fallback). The project is distributed via GitHub, so nothing goes to npm.
+# Tag pushed → typecheck, test, build, pack a tarball, publish to npm, then
+# create the GitHub Release with the notes from docs/releases/<tag>.md
+# (generated notes as a fallback).
 on:
   push:
     tags:
@@ -22,6 +22,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
       - run: npm run typecheck
@@ -33,6 +34,19 @@ jobs:
 
       - name: Pack tarball
         run: npm pack
+
+      - name: Publish to npm
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "${name}@${version}" version >/dev/null 2>&1; then
+            echo "${name}@${version} 已存在，跳过发布"
+            exit 0
+          fi
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Locate release notes
         id: notes
@@ -52,12 +66,3 @@ jobs:
           fail_on_unmatched_files: true
           draft: false
           prerelease: false
-
-      # Publishing to npm is intentionally disabled. To enable it, register the
-      # package, then either bind a Trusted Publisher on npmjs.com or add an
-      # NPM_TOKEN secret (Automation type) and uncomment the step below.
-      #
-      # - name: Publish
-      #   run: npm publish --provenance
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

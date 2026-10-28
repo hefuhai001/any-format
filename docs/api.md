@@ -77,7 +77,7 @@ canConvert('text', 'json', { maxHops: 3 });      // true
 ## 格式探测
 
 ```ts
-import { detectFormat, detectFromFileName, detectFromMimeType } from 'any-format';
+import { detectFormat, detectFromFileName, detectFromMimeType } from '@hefuhai001/any-format';
 
 detectFormat('{"a":1}');              // { format: 'json', confidence: 1 }
 detectFormat('# Title\n\n- a\n- b');  // { format: 'markdown', confidence: 0.95 }
@@ -90,7 +90,7 @@ detectFromMimeType('text/html; charset=utf-8'); // 'html'
 注册自定义探测器：
 
 ```ts
-import { registerDetector } from 'any-format';
+import { registerDetector } from '@hefuhai001/any-format';
 
 const dispose = registerDetector({
   format: 'toml',
@@ -106,7 +106,7 @@ dispose();
 ## registerConverter(converter)
 
 ```ts
-import { registerConverter } from 'any-format';
+import { registerConverter } from '@hefuhai001/any-format';
 
 const dispose = registerConverter({
   from: 'text',
@@ -132,7 +132,7 @@ dispose();                             // 注销，可重复调用
 默认注册表是模块级单例。多租户服务或测试可用独立实例，互不影响：
 
 ```ts
-import { ConverterRegistry, runConversion, markdownToHtml } from 'any-format';
+import { ConverterRegistry, runConversion, markdownToHtml } from '@hefuhai001/any-format';
 
 const registry = new ConverterRegistry();
 registry.register(markdownToHtml);
@@ -159,7 +159,7 @@ await runConversion(registry, '# hi', 'markdown', 'html');
 ## 错误处理
 
 ```ts
-import { isConversionError, UnsupportedConversionError } from 'any-format';
+import { isConversionError, UnsupportedConversionError } from '@hefuhai001/any-format';
 
 try {
   await convert('x', 'unknown', 'markdown');
@@ -199,13 +199,13 @@ import {
   listConverters,      // { from, to, name, priority }[]
   READ_ONLY_FORMATS,   // ['doc', 'pdf']
   normalizeFormat,     // 'JPG' -> 'jpeg'
-} from 'any-format';
+} from '@hefuhai001/any-format';
 ```
 
 单独使用某个转换器（跳过调度）：
 
 ```ts
-import { markdownToHtml, parseCsv, serializeCsv, renderMarkdownTable } from 'any-format';
+import { markdownToHtml, parseCsv, serializeCsv, renderMarkdownTable } from '@hefuhai001/any-format';
 
 markdownToHtml.convert('# Hi', {}, { throwIfAborted: () => {} });
 ```

@@ -4,7 +4,7 @@
 
 轻量、可插拔的文档格式转换基础库。文本与表格转换零依赖，Office/PDF/图片按需加载引擎。
 
-> **尚未发布到 npm**，请从 GitHub 安装（见下方）。
+> npm 包名为 **`@hefuhai001/any-format`**，GitHub 仓库仍叫 `any-format`。
 
 ## 特性
 
@@ -17,14 +17,17 @@
 ## 安装
 
 ```bash
-# 锁定 tag（推荐）
-npm i github:hefuhai001/any-format#v0.0.1
+# 从 npm 安装（推荐）
+npm i @hefuhai001/any-format
+
+# 或从 GitHub 安装并锁定 tag
+npm i github:hefuhai001/any-format#v0.0.2
 
 # 跟随主干
 npm i github:hefuhai001/any-format
 ```
 
-依赖 `prepare` 脚本在安装时自动构建，要求 Node.js >= 18。安装细节与其他分发方式见 **[分发与安装](./docs/distribution.md)**。
+要求 Node.js >= 18。从 GitHub 安装时会执行 `prepare` 脚本自动构建。安装细节与其他分发方式见 **[分发与安装](./docs/distribution.md)**。
 
 用到 Office/PDF/图片/音频时按需安装对应引擎，未安装只影响该格式：
 
@@ -41,7 +44,7 @@ npm i ffmpeg-static     # wav / mp3 / flac / ogg / aac / m4a（也可用系统 f
 ## 快速开始
 
 ```ts
-import { convert } from 'any-format';
+import { convert } from '@hefuhai001/any-format';
 
 const { data, path } = await convert('# Hello\n\n**world**', 'markdown', 'html');
 // data: <h1>Hello</h1>\n\n<p><strong>world</strong></p>
@@ -85,7 +88,7 @@ await writeFile('out.pdf', pdf.data as Uint8Array);
 ## 常用 API
 
 ```ts
-import { canConvert, convert, detectFormat, registerConverter } from 'any-format';
+import { canConvert, convert, detectFormat, registerConverter } from '@hefuhai001/any-format';
 
 // 转换；options 支持 converterOptions / via / maxHops / signal
 await convert(input, 'markdown', 'text', { maxHops: 3 });
@@ -107,7 +110,7 @@ const dispose = registerConverter({
 图片除 `convert()` 外还提供两个直连辅助函数：
 
 ```ts
-import { convertImage, readImageInfo } from 'any-format';
+import { convertImage, readImageInfo } from '@hefuhai001/any-format';
 
 // 等同 convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });
@@ -117,7 +120,7 @@ const { width, height, hasAlpha } = await readImageInfo(webp);
 音频依赖 `ffmpeg` 可执行文件，解析顺序为 `converterOptions.ffmpegPath` → `FFMPEG_PATH` → 可选包 `ffmpeg-static` → `PATH`：
 
 ```ts
-import { convertAudio, resolveFfmpeg } from 'any-format';
+import { convertAudio, resolveFfmpeg } from '@hefuhai001/any-format';
 
 const mp3 = await convertAudio(wavBuffer, 'mp3', { bitrate: 192, sampleRate: 44100 });
 console.log(await resolveFfmpeg()); // 查看实际使用的 ffmpeg

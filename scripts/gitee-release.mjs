@@ -21,9 +21,12 @@ const TOKEN = process.env.GITEE_TOKEN ?? '';
 const args = parseArgs(process.argv.slice(2));
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 
+/** `@scope/name` → `name`；npm pack 会把作用域前缀从文件名里去掉。 */
+const packPrefix = String(pkg.name).replace(/^@[^/]+\//, '').replace(/\//g, '-');
+
 const tag = String(args.tag ?? `v${pkg.version}`);
 const notesFile = String(args['notes-file'] ?? join('docs', 'releases', `${tag}.md`));
-const tarball = String(args.file ?? `${pkg.name}-${pkg.version}.tgz`);
+const tarball = String(args.file ?? `${packPrefix}-${pkg.version}.tgz`);
 const token = args.token ? String(args.token) : TOKEN;
 
 if (!existsSync(tarball)) {

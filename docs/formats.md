@@ -71,7 +71,7 @@ npm i ffmpeg-static    # 内置 ffmpeg 二进制；也可改用系统 ffmpeg
 
 ```ts
 import { readFile, writeFile } from 'node:fs/promises';
-import { convert } from 'any-format';
+import { convert } from '@hefuhai001/any-format';
 
 const docx = await readFile('report.docx');   // 不要传 'utf8'
 const { data } = await convert(docx, 'docx', 'markdown');  // string
@@ -156,7 +156,7 @@ await writeFile('photo.jpg', webp.data as Uint8Array);
 除 `convert()` 外还有两个直连辅助函数：
 
 ```ts
-import { convertImage, readImageInfo } from 'any-format';
+import { convertImage, readImageInfo } from '@hefuhai001/any-format';
 
 const avif = await convertImage(pngBuffer, 'avif', { quality: 60 });
 const info = await readImageInfo(avif);
@@ -188,7 +188,7 @@ await writeFile('voice.mp3', mp3.data as Uint8Array);
 ffmpeg 可执行文件的解析顺序：`converterOptions.ffmpegPath` → 环境变量 `FFMPEG_PATH` → 可选包 `ffmpeg-static` → `PATH` 里的 `ffmpeg`。都没找到时会抛出带安装提示的错误：
 
 ```ts
-import { convertAudio, resolveFfmpeg } from 'any-format';
+import { convertAudio, resolveFfmpeg } from '@hefuhai001/any-format';
 
 const flac = await convertAudio(wavBuffer, 'flac', { compressionLevel: 9 });
 await resolveFfmpeg(); // 当前会使用哪个 ffmpeg

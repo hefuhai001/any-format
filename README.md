@@ -4,7 +4,7 @@
 
 A lightweight, plugin-based document conversion library. Text and table conversions have zero runtime dependencies; Office/PDF/image engines are loaded on demand.
 
-> **Not yet published to npm** — install from GitHub (see below).
+> Published as **`@hefuhai001/any-format`** on npm; the GitHub repo is still `any-format`.
 
 ## Features
 
@@ -17,14 +17,17 @@ A lightweight, plugin-based document conversion library. Text and table conversi
 ## Install
 
 ```bash
-# Pin a tag (recommended)
-npm i github:hefuhai001/any-format#v0.0.1
+# From npm (recommended)
+npm i @hefuhai001/any-format
+
+# Or straight from GitHub, pinned to a tag
+npm i github:hefuhai001/any-format#v0.0.2
 
 # Or track the main branch
 npm i github:hefuhai001/any-format
 ```
 
-A `prepare` script builds the package on install; Node.js >= 18 is required. See **[Distribution](./docs/distribution.md)** for other options (install details are in Chinese).
+Node.js >= 18 is required. When installing from GitHub a `prepare` script builds the package on install. See **[Distribution](./docs/distribution.md)** for other options (install details are in Chinese).
 
 Office/PDF/image/audio formats need their engine installed on demand — a missing engine only affects that format:
 
@@ -41,7 +44,7 @@ npm i ffmpeg-static     # wav / mp3 / flac / ogg / aac / m4a (or a system ffmpeg
 ## Quick start
 
 ```ts
-import { convert } from 'any-format';
+import { convert } from '@hefuhai001/any-format';
 
 const { data, path } = await convert('# Hello\n\n**world**', 'markdown', 'html');
 // data: <h1>Hello</h1>\n\n<p><strong>world</strong></p>
@@ -85,7 +88,7 @@ See **[Formats](./docs/formats.md)** for the full matrix, per-format options and
 ## Common API
 
 ```ts
-import { canConvert, convert, detectFormat, registerConverter } from 'any-format';
+import { canConvert, convert, detectFormat, registerConverter } from '@hefuhai001/any-format';
 
 // Convert; options accept converterOptions / via / maxHops / signal
 await convert(input, 'markdown', 'text', { maxHops: 3 });
@@ -107,7 +110,7 @@ const dispose = registerConverter({
 Images also ship two direct helpers alongside `convert()`:
 
 ```ts
-import { convertImage, readImageInfo } from 'any-format';
+import { convertImage, readImageInfo } from '@hefuhai001/any-format';
 
 // Same as convert(png, 'png', 'webp', { converterOptions: { quality: 75 } })
 const webp = await convertImage(pngBuffer, 'webp', { quality: 75 });
@@ -117,7 +120,7 @@ const { width, height, hasAlpha } = await readImageInfo(webp);
 Audio uses the `ffmpeg` binary, resolved from `converterOptions.ffmpegPath`, then `FFMPEG_PATH`, then the optional `ffmpeg-static` package, then `PATH`:
 
 ```ts
-import { convertAudio, resolveFfmpeg } from 'any-format';
+import { convertAudio, resolveFfmpeg } from '@hefuhai001/any-format';
 
 const mp3 = await convertAudio(wavBuffer, 'mp3', { bitrate: 192, sampleRate: 44100 });
 console.log(await resolveFfmpeg()); // which ffmpeg will be used

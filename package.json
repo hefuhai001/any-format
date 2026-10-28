@@ -1,5 +1,5 @@
 {
-  "name": "any-format",
+  "name": "@hefuhai001/any-format",
   "version": "0.0.2",
   "description": "A lightweight, plugin-based document format conversion library for Node.js",
   "keywords": [

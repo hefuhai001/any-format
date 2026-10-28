@@ -32,8 +32,9 @@
 
 ### 变更
 
-- **包名与导入名统一为 `any-format`**（此前为 `anyformat`）：`import { convert } from 'any-format'`
+- **导入名统一为 `@hefuhai001/any-format`**：npm 上 `any-format` 已被其他项目占用，因此以作用域包名发布；仓库名仍为 `any-format`
 - 仓库地址同步为 `github.com/hefuhai001/any-format`，README 与文档中的安装、克隆命令全部更新
+- CI 增加 npm 发布步骤（`NPM_TOKEN` 注入，版本已存在时自动跳过）
 - README 双语化：`README.md` 为英文默认，`README.zh-CN.md` 为中文，顶部可互相切换
 - PDF / PPTX 写入的默认作者元数据改为 `any-format`
 - `package.json` 关键词补充 `image` / `png` / `jpeg` / `webp` / `audio` / `mp3` / `wav` / `flac`
@@ -60,7 +61,8 @@
 ### 安装
 
 ```bash
-npm i github:hefuhai001/any-format#v0.0.2
+npm i @hefuhai001/any-format          # npm
+npm i github:hefuhai001/any-format#v0.0.2   # GitHub 直装
 ```
 
 ## [0.0.1] - 2026-10-27
